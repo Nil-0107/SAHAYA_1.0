@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAATHI — Victim Well-being Support</title>
+<style>
+:root{--bg:#f5f7f8;--white:#fff;--ink:#17232b;--muted:#66757e;--line:#dfe7ea;--nav:#123f4c;--teal:#2d8d87;--green:#3f8c65;--amber:#b27b27;--red:#b64a49;--shadow:0 12px 35px rgba(20,45,55,.08);--r:18px}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.landing{min-height:100vh;display:grid;grid-template-columns:1.15fr .85fr;background:#f5f8f8}
+.landing-left{padding:8vh 8vw;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,#e8f4f2,#f7faf9)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:850;font-size:23px;color:var(--nav)}.brandmark{width:42px;height:42px;border-radius:13px;background:var(--nav);color:white;display:grid;place-items:center}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--teal)}
+.landing h1{font-size:50px;line-height:1.03;max-width:650px;margin:25px 0 17px}.landing p{max-width:620px;color:var(--muted);font-size:16px;line-height:1.7}
+.features{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}.feature{background:#fff;border:1px solid var(--line);padding:10px 13px;border-radius:99px;font-size:12px;font-weight:700}
+.login-side{display:flex;align-items:center;justify-content:center;padding:35px}.login{background:#fff;border:1px solid var(--line);border-radius:24px;padding:32px;width:min(450px,100%);box-shadow:var(--shadow)}.login h2{margin:8px 0}.login p{color:var(--muted);line-height:1.5;font-size:13px}
+.role-options{display:grid;gap:10px;margin:22px 0}.role-option{border:1px solid var(--line);background:#fff;border-radius:13px;padding:14px;text-align:left;display:flex;align-items:center;gap:12px}.role-option:hover{border-color:#9bbec0}.role-option strong{display:block}.role-option span{font-size:11px;color:var(--muted)}.role-icon{width:38px;height:38px;border-radius:10px;background:#edf5f4;display:grid;place-items:center;color:var(--nav);font-weight:900}
+.field{display:grid;gap:6px;margin-top:13px}.field label{font-size:12px;font-weight:750}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;outline:none;width:100%}
+.btn{border:0;border-radius:11px;padding:11px 15px;font-weight:750}.primary{background:var(--nav);color:white}.secondary{background:white;color:var(--nav);border:1px solid var(--line)}.danger{background:#fff0ef;color:#a43e3d;border:1px solid #efc9c6}.small{padding:8px 11px;font-size:12px}
+.app{display:none;min-height:100vh}.sidebar{width:235px;position:fixed;inset:0 auto 0 0;background:var(--nav);color:#eaf5f6;padding:22px 15px}.sidebrand{display:flex;gap:10px;align-items:center;padding:5px 9px 25px;font-weight:850;font-size:19px}.sidebrand .brandmark{background:#d9eeea;color:var(--nav);width:35px;height:35px;font-size:14px}.sidebrand small{display:block;font-size:9px;opacity:.65;letter-spacing:.1em}
+.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#d6e7e9;padding:12px;border-radius:10px;text-align:left}.nav button:hover,.nav button.active{background:rgba(255,255,255,.1);color:#fff}
+.main{margin-left:235px;width:calc(100% - 235px)}.topbar{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 30px}.user{display:flex;gap:10px;align-items:center;font-size:12px}.avatar{width:35px;height:35px;border-radius:50%;background:#dcecef;color:var(--nav);display:grid;place-items:center;font-weight:800}
+.content{max-width:1300px;margin:auto;padding:30px}.page{display:none}.page.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.section{margin-top:20px}.head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:14px}.head h1{font-size:30px;margin:5px 0}.head p,.muted{color:var(--muted);font-size:13px;line-height:1.55}
+.hero{background:linear-gradient(135deg,#e8f4f2,#fff);border:1px solid #d5e8e5;border-radius:22px;padding:28px;display:grid;grid-template-columns:1.5fr .8fr;gap:22px}.hero h1{font-size:35px;margin:8px 0}.hero p{color:var(--muted);line-height:1.6}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.metric{font-size:29px;font-weight:850;margin:5px 0}.kpi{padding:17px;border:1px solid var(--line);border-radius:14px;background:#fbfcfc}.label{font-size:11px;color:var(--muted)}.pill{display:inline-flex;padding:5px 9px;border-radius:99px;font-size:11px;font-weight:800}.stable{background:#eaf6ef;color:#2f7c55}.watch{background:#fff5df;color:#946817}.elevated{background:#fff0dc;color:#a36017}.critical{background:#fde9e8;color:#a33f3f}
+.ring{width:145px;height:145px;border-radius:50%;background:conic-gradient(var(--amber) 0 68%,#e5ecee 68%);display:grid;place-items:center;margin:auto;position:relative}.ring:after{content:"";position:absolute;inset:11px;background:#fff;border-radius:50%}.ring>div{position:relative;z-index:1;text-align:center}.ring strong{font-size:35px;display:block}.ring small{color:var(--muted)}
+.forecast{margin-top:14px;padding:11px;background:#f8fafb;border-radius:11px;display:flex;gap:10px}.forecast b{display:block}.reason{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid #edf1f2}.reason:last-child{border:0}.reason .num{width:27px;height:27px;border-radius:8px;background:#edf5f4;color:var(--nav);display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}.reason p{margin:3px 0;color:var(--muted);font-size:12px;line-height:1.45}
+.test-card{border:2px solid #d1e5e2;background:#fbfffe}.test-options{display:grid;gap:9px;margin-top:14px}.test-option{border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px;text-align:left}.test-option:hover{border-color:#8dbab7;background:#f8fcfb}.progress{height:7px;background:#e7edef;border-radius:99px;overflow:hidden}.progress span{height:100%;display:block;background:var(--teal)}
+.timeline{border-left:2px solid #dce8e9;padding-left:24px;margin:14px 0 0 8px}.event{padding:0 0 19px;position:relative}.event:before{content:"";position:absolute;left:-31px;top:3px;width:9px;height:9px;background:#fff;border:3px solid var(--teal);border-radius:50%}.event strong{font-size:13px}.event small{display:block;color:var(--muted);margin-top:3px}
+.channel{padding:16px;border:1px solid var(--line);border-radius:13px}.channel strong{display:block;margin-top:7px}.channel p{font-size:12px;color:var(--muted);line-height:1.45}
+.table-wrap{overflow:auto}.notif-panel{position:fixed;left:250px;top:82px;width:320px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 45px rgba(20,45,55,.16);z-index:15;padding:14px}.notif-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.notif-item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;background:#fbfcfc}.notif-item.unread{border-left:4px solid var(--red);background:#fffaf9}.notif-item b{font-size:12px}.notif-item p{font-size:11px;color:var(--muted);margin:5px 0 8px;line-height:1.4}.case-detail{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fbfcfc}.score-row{display:flex;align-items:center;gap:9px;margin:10px 0}.score-track{height:8px;background:#e6edef;border-radius:99px;flex:1;overflow:hidden}.score-fill{height:100%;background:#b27b27}.badge-count{background:#c84f4c;color:#fff;border-radius:99px;font-size:9px;padding:2px 6px;margin-left:5px}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{padding:12px;border-bottom:1px solid #edf0f2;text-align:left;white-space:nowrap}.table th{font-size:10px;color:var(--muted);text-transform:uppercase}
+.chart{height:150px;display:flex;align-items:end;gap:8px}.bar{flex:1;background:#83b4b0;border-radius:6px 6px 2px 2px}.modal{position:fixed;inset:0;background:rgba(10,30,35,.45);display:none;place-items:center;z-index:20;padding:20px}.modal.show{display:grid}.modalbox{background:white;padding:27px;border-radius:20px;width:min(620px,100%);box-shadow:0 25px 70px rgba(0,0,0,.2)}.toast{position:fixed;bottom:22px;right:22px;background:#163f4b;color:#fff;padding:12px 15px;border-radius:11px;display:none;z-index:30}
+
+.case-method{position:relative;border:1px solid var(--line);background:#fff;border-radius:15px;padding:17px;text-align:left;min-height:135px;display:flex;flex-direction:column;gap:8px;transition:.15s}.case-method:hover,.case-method.active{border-color:#4d9188;background:#f1faf8}.case-method-icon{width:38px;height:38px;border-radius:11px;background:#edf6f4;color:#286e68;display:grid;place-items:center;font-size:20px;font-weight:800}.case-method b{display:block;color:var(--ink);font-size:14px}.case-method small{display:block;color:var(--muted);font-size:11px;line-height:1.4;margin-top:4px}.case-method em{position:absolute;top:10px;right:10px;font-style:normal;background:#2f756c;color:#fff;padding:5px 7px;border-radius:7px;font-size:8px;font-weight:850;letter-spacing:.04em}.case-upload{margin-top:16px;min-height:300px;border:2px dashed #a9cfc8;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#fcfefe}.case-upload-icon{width:65px;height:65px;border-radius:18px;background:#e0f1ed;color:#327d74;display:grid;place-items:center;font-size:29px;margin-bottom:10px}.case-upload h2{margin:4px 0 6px}.case-upload p{max-width:650px;margin:4px 0;color:var(--muted)}.case-sample{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:20px;background:#f8fbfb}.case-record-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.case-record-grid .case-detail{min-height:70px}.case-detail .label{margin-bottom:5px}.case-detail b{font-size:13px}.timeline .event.completed:before{border-color:#3f8c65;background:#3f8c65}.timeline .event.upcoming:before{border-color:#b64a49;background:#fff}.timeline .event.pending:before{border-color:#cbd9da;background:#fff}.case-method:disabled{opacity:.65}
+@media(max-width:850px){.landing{grid-template-columns:1fr}.landing-left{padding:45px 25px}.landing h1{font-size:37px}.sidebar{position:static;width:100%}.app{display:block}.main{margin:0;width:100%}.g2,.g3,.g4,.hero,.case-record-grid{grid-template-columns:1fr}.case-sample{align-items:flex-start;flex-direction:column}.content{padding:18px}}
+
+/* AUTH FLOW */
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#edf4f4;padding:4px;border-radius:12px;margin:18px 0 16px}
+.auth-tab{border:0;background:transparent;padding:10px;border-radius:9px;font-weight:800;color:var(--muted)}
+.auth-tab.active{background:#fff;color:var(--nav);box-shadow:0 2px 8px rgba(20,45,55,.08)}
+.auth-step{display:none}.auth-step.active{display:block}
+.auth-steps{display:flex;align-items:center;gap:7px;margin:8px 0 18px}
+.auth-step-dot{width:26px;height:26px;border-radius:50%;background:#e7eeee;color:#6b7b82;display:grid;place-items:center;font-size:11px;font-weight:900}
+.auth-step-dot.active{background:var(--nav);color:#fff}.auth-step-line{height:2px;background:#e1e9ea;flex:1}.auth-step-line.active{background:var(--teal)}
+.auth-role-selected{display:flex;align-items:center;gap:10px;padding:11px;background:#f4f9f8;border:1px solid #d7e9e6;border-radius:11px;margin:12px 0}
+.password-wrap{position:relative}.password-wrap input{padding-right:55px}.show-pass{position:absolute;right:8px;top:7px;border:0;background:transparent;color:var(--muted);padding:5px;font-size:11px}
+.password-meter{height:6px;background:#e7edef;border-radius:99px;overflow:hidden;margin-top:7px}.password-meter span{height:100%;display:block;width:0;background:var(--red);transition:.2s}
+.password-hint{font-size:10px;color:var(--muted);line-height:1.4}
+.otp-row{display:flex;gap:8px}.otp-row input{flex:1;text-align:center;font-size:20px;letter-spacing:.25em;font-weight:800}
+.demo-otp{margin-top:10px;padding:9px 11px;border-radius:10px;background:#fff7e3;border:1px solid #f0ddb0;color:#7b5b18;font-size:11px}
+.auth-back{margin-top:10px;width:100%}.role-options.compact{margin:14px 0}.role-options.compact .role-option{padding:11px}
+.auth-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:12px}
+.form-error{font-size:11px;color:#a43e3d;margin-top:7px;display:none}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.profile-grid{grid-template-columns:1fr}.otp-row input{font-size:17px}}
+
+</style>
+</head>
+<body>
+
+<!-- SINGLE LANDING / LOGIN -->
+<section id="landing" class="landing">
+  <div class="landing-left">
+    <div class="brand"><div class="brandmark">S</div>SAATHI</div>
+    <div class="eyebrow" style="margin-top:65px">Victim well-being monitoring & support</div>
+    <h1>A quiet support layer through the case journey.</h1>
+    <p>Periodic check-ins, longitudinal well-being monitoring, early distress-risk identification and connection to human support — designed to work alongside the investigation, trial, rehabilitation and compensation process.</p>
+    <div class="features">
+      <div class="feature">Periodic check-ins</div><div class="feature">Text + voice</div><div class="feature">Multilingual</div><div class="feature">Human escalation</div><div class="feature">Explainable risk</div>
+    </div>
+  </div>
+  <div class="login-side">
+    <div class="login">
+      <div class="eyebrow">Secure access</div>
+      <h2 id="authTitle">Welcome to SAATHI</h2>
+      <p id="authSubtitle">Choose your role first. You can sign in to an existing account or create a new one.</p>
+
+      <div class="auth-tabs">
+        <button id="loginTab" class="auth-tab active" onclick="setAuthMode('login')">Log in</button>
+        <button id="signupTab" class="auth-tab" onclick="setAuthMode('signup')">Sign up</button>
+      </div>
+
+      <!-- STEP 1: ROLE -->
+      <div id="authStepRole" class="auth-step active">
+        <div class="eyebrow">Step 1 · Choose role</div>
+        <div class="role-options compact">
+          <button class="role-option" onclick="chooseAuthRole('victim')"><div class="role-icon">♡</div><div><strong>Victim / User</strong><span>Well-being, case journey and support</span></div></button>
+          <button class="role-option" onclick="chooseAuthRole('counsellor')"><div class="role-icon">+</div><div><strong>Psychologist / Counsellor</strong><span>Well-being requests and counselling follow-up</span></div></button>
+          <button class="role-option" onclick="chooseAuthRole('district')"><div class="role-icon">⚖</div><div><strong>District Officer</strong><span>Legal assistance, protection and case coordination</span></div></button>
+          <button class="role-option" onclick="chooseAuthRole('admin')"><div class="role-icon">▤</div><div><strong>State / National Administrator</strong><span>Aggregated monitoring and programme analytics</span></div></button>
+        </div>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginFlow" class="auth-step">
+        <div class="auth-role-selected"><div class="role-icon" id="loginRoleIcon">♡</div><div><strong id="loginRoleName">Victim / User</strong><span class="muted">Selected role</span></div><button class="btn secondary small" style="margin-left:auto" onclick="backToRole()">Change</button></div>
+        <div class="field"><label>Registered mobile / official ID</label><input id="loginId" autocomplete="username" placeholder="Enter registered mobile or ID"></div>
+        <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password"><button class="show-pass" onclick="togglePassword('loginPassword',this)">Show</button></div></div>
+        <div id="loginError" class="form-error"></div>
+        <button class="btn primary" style="width:100%;margin-top:15px" onclick="login()">Log in securely</button>
+        <button class="btn secondary auth-back" onclick="setAuthMode('signup')">Create a new account</button>
+        <p class="auth-note">Demo UI: any non-empty registered ID and password can enter. Connect this form to your authentication API for production.</p>
+      </div>
+
+      <!-- SIGNUP STEP 2 -->
+      <div id="signupStepAccount" class="auth-step">
+        <div class="auth-steps"><div class="auth-step-dot active">1</div><div class="auth-step-line"></div><div class="auth-step-dot">2</div><div class="auth-step-line"></div><div class="auth-step-dot">3</div></div>
+        <div class="eyebrow">Step 2 · Create account</div>
+        <div class="auth-role-selected"><div class="role-icon" id="signupRoleIcon">♡</div><div><strong id="signupRoleName">Victim / User</strong><span class="muted">Account role</span></div></div>
+        <div class="profile-grid">
+          <div class="field"><label>Full name</label><input id="signupName" placeholder="Enter full name" autocomplete="name"></div>
+          <div class="field"><label>Mobile number</label><input id="signupPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel"></div>
+        </div>
+        <div class="field"><label>Email address <span class="muted">(optional)</span></label><input id="signupEmail" type="email" placeholder="name@example.com" autocomplete="email"></div>
+        <div class="field"><label>Create password</label><div class="password-wrap"><input id="signupPassword" type="password" autocomplete="new-password" placeholder="Minimum 8 characters" oninput="updatePasswordStrength()"><button class="show-pass" onclick="togglePassword('signupPassword',this)">Show</button></div><div class="password-meter"><span id="passwordMeter"></span></div><div id="passwordHint" class="password-hint">Use 8+ characters with uppercase, lowercase, number and symbol.</div></div>
+        <div class="field"><label>Confirm password</label><input id="signupConfirm" type="password" autocomplete="new-password" placeholder="Re-enter password"></div>
+        <div id="signupError" class="form-error"></div>
+        <button class="btn primary" style="width:100%;margin-top:15px" onclick="createAccountAndSendOTP()">Create account & send OTP</button>
+        <button class="btn secondary auth-back" onclick="backToRole()">Back to role</button>
+      </div>
+
+      <!-- SIGNUP STEP 3: OTP -->
+      <div id="signupStepOtp" class="auth-step">
+        <div class="auth-steps"><div class="auth-step-dot active">1</div><div class="auth-step-line active"></div><div class="auth-step-dot active">2</div><div class="auth-step-line"></div><div class="auth-step-dot">3</div></div>
+        <div class="eyebrow">Step 3 · OTP verification</div>
+        <h3 style="margin:7px 0">Verify your mobile number</h3>
+        <p id="otpDestination" class="muted">We sent a one-time password to your registered mobile number.</p>
+        <div class="otp-row"><input id="signupOtp" inputmode="numeric" maxlength="6" placeholder="••••••"></div>
+        <div id="demoOtp" class="demo-otp hidden"></div>
+        <div id="otpError" class="form-error"></div>
+        <button class="btn primary" style="width:100%;margin-top:15px" onclick="verifySignupOTP()">Verify OTP</button>
+        <button class="btn secondary auth-back" onclick="resendSignupOTP()">Resend OTP</button>
+        <button class="btn secondary auth-back" onclick="goSignupAccount()">Back to account details</button>
+      </div>
+
+      <!-- SIGNUP STEP 4: ACCOUNT SETUP + PHONE VERIFICATION -->
+      <div id="signupStepSetup" class="auth-step">
+        <div class="auth-steps"><div class="auth-step-dot active">1</div><div class="auth-step-line active"></div><div class="auth-step-dot active">2</div><div class="auth-step-line active"></div><div class="auth-step-dot active">3</div></div>
+        <div class="eyebrow">Step 4 · Account setup</div>
+        <h3 style="margin:7px 0">Finish your profile</h3>
+        <p class="muted">Your account is verified. Complete the basic profile before entering SAATHI.</p>
+        <div class="profile-grid">
+          <div class="field"><label>Preferred language</label><select id="profileLanguage"><option>English</option><option>Hindi</option><option>Bengali</option><option>Odia</option><option>Marathi</option></select></div>
+          <div class="field"><label>City / district</label><input id="profileLocation" placeholder="Enter city or district"></div>
+        </div>
+        <div class="field"><label>Account mobile verification</label><div style="display:flex;gap:8px"><input id="profilePhone" type="tel" readonly><span class="pill stable" style="align-self:center">Verified</span></div></div>
+        <div style="margin-top:14px;padding:12px;border:1px solid #dce9e7;background:#f6fbfa;border-radius:11px"><b style="font-size:12px">Important</b><p class="auth-note" style="margin:4px 0 0">This verification is for <strong>your own account mobile number</strong>. It is separate from any emergency contact number, which can be added later in your account settings.</p></div>
+        <div class="field"><label>Emergency contact <span class="muted">(optional · not used for account verification)</span></label><input id="emergencyContact" placeholder="Name and number, if you want to add one"></div>
+        <div id="setupError" class="form-error"></div>
+        <button class="btn primary" style="width:100%;margin-top:15px" onclick="finishSignup()">Finish account setup</button>
+      </div>
+
+      <div id="authHint" class="muted" style="text-align:center;margin-top:14px">Select a role above to continue.</div>
+    </div>
+  </div>iv>
+</section>
+
+<!-- APP -->
+<section id="app" class="app">
+  <aside class="sidebar">
+    <div class="sidebrand"><div class="brandmark">S</div><div>SAATHI<small>WELL-BEING SUPPORT</small></div></div>
+    <nav id="nav" class="nav"></nav>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div id="topTitle">SAATHI</div><div class="user"><button id="notifBell" class="btn secondary small hidden" onclick="toggleNotifications()">🔔 <span id="notifCount" class="badge-count">0</span></button><span id="roleName"></span><div class="avatar">S</div><button class="btn secondary small" onclick="logout()">Sign out</button></div></header>
+    <div id="notificationPanel" class="notif-panel hidden"></div>
+    <div class="content">
+
+      <!-- VICTIM HOME -->
+      <section id="victim-home" class="page">
+        <div class="hero">
+          <div><div class="eyebrow">Welcome</div><h1>You don't have to go through it alone.</h1><p>Your SAATHI space keeps your case journey, well-being check-ins and support options together. You can choose how you communicate and ask for human help at any time.</p>
+            <div class="actions"><button class="btn primary" onclick="showPage('victim-test')">Start today's well-being check</button><button class="btn secondary" onclick="showPage('victim-support')">Get human support</button><button class="btn danger" onclick="safety()">I'm not safe</button></div>
+          </div>
+          <div class="card" style="box-shadow:none"><div class="label">Current well-being</div><div class="ring"><div><strong>68</strong><small>distress / 100</small></div></div><div style="text-align:center;margin-top:8px"><span class="pill elevated">Elevated</span></div><div class="forecast"><span style="font-size:22px">↗</span><div><b>Trajectory increasing</b><span class="muted">7-day forecast: 76</span></div></div></div>
+        </div>
+        <div class="section grid g3">
+          <div class="kpi"><div class="label">Case stage</div><div class="metric" style="font-size:22px">Investigation</div></div>
+          <div class="kpi"><div class="label">Next hearing</div><div class="metric">14 Oct</div></div>
+          <div class="kpi"><div class="label">Support</div><div class="metric" style="font-size:22px">1 request</div></div>
+        </div>
+        <div class="section grid g2">
+          <div class="card"><h2>Today's next step</h2><p>Complete an open-ended check-in. You can answer by text, use voice support, or have a guided AI conversation.</p><button class="btn primary small" onclick="showPage('victim-test')">Take check-in</button></div>
+          <div class="card"><h2>Why your status changed</h2><div class="reason"><div class="num">1</div><div><b>Recent responses increased</b><p>Distress has moved upward across recent check-ins.</p></div></div><div class="reason"><div class="num">2</div><div><b>Upcoming case event</b><p>A hearing is approaching in the case timeline.</p></div></div></div>
+        </div>
+      </section>
+
+      <!-- ACTUAL TEST / CHECK-IN -->
+      <section id="victim-test" class="page">
+        <div class="head"><div><div class="eyebrow">Periodic assessment</div><h1>Today's well-being check</h1><p>Tell us in your own words. There are no multiple-choice answers. Your response is analysed by the backend later to understand changes in well-being and identify when human support may be needed.</p></div><span class="pill stable">Open-ended</span></div>
+        <div class="card test-card">
+          <div style="display:flex;justify-content:space-between;gap:15px"><b>Check-in · 1 of 5</b><span class="muted">About 3–5 minutes</span></div>
+          <div class="progress" style="margin-top:9px"><span style="width:20%"></span></div>
+          <div style="margin-top:28px"><div class="eyebrow">Question</div><h2 style="font-size:24px;margin-top:8px">How have you been feeling since your last check-in, and what has been affecting you the most?</h2></div>
+          <textarea id="openAnswer" rows="7" placeholder="Write whatever you feel comfortable sharing..."></textarea>
+          <div class="actions"><button class="btn secondary small" onclick="showPage('victim-home')">Save & exit</button><button class="btn primary small" onclick="toast('Response captured. Gemini/model analysis will be connected through the backend.')">Submit response</button></div>
+          <p class="muted" style="margin-top:15px">This check-in is for well-being monitoring and support routing. It is not a medical diagnosis. If you are in immediate danger, use the safety support option instead.</p>
+        </div>
+        <div class="section grid g2">
+          <div class="card"><div class="eyebrow">How would you like to respond?</div><h2>Voice support</h2><p>Speak naturally instead of typing. The backend can transcribe the response and analyse permitted voice/text signals.</p><button class="btn secondary small" onclick="toast('Voice recording placeholder — connect microphone/transcription backend later')">🎙 Start voice response</button></div>
+          <div class="card"><div class="eyebrow">Conversational support</div><h2>AI support</h2><p>Have a guided conversation with the AI when answering an open-ended check-in feels easier.</p><button class="btn primary small" onclick="showPage('victim-ai')">Open AI support</button></div>
+        </div>
+      </section>
+
+      <section id="victim-ai" class="page">
+        <div class="head"><div><div class="eyebrow">Gemini-powered support</div><h1>AI support</h1><p>A conversational interface for check-ins and support. The backend can connect this screen to Gemini and your safety/routing layer.</p></div><span class="pill stable">AI assistant</span></div>
+        <div class="card" style="min-height:430px;display:flex;flex-direction:column">
+          <div style="background:#f4f8f8;border-radius:13px;padding:14px;max-width:75%"><b>SAATHI AI</b><p class="muted" style="margin:5px 0 0">I'm here to listen. You can tell me what has been difficult recently, what you are worried about, or what kind of support you need.</p></div>
+          <div id="chatMessages" style="display:grid;gap:10px;margin-top:15px;flex:1"></div>
+          <div style="display:flex;gap:8px;margin-top:20px"><input id="chatInput" style="flex:1;border:1px solid var(--line);border-radius:11px;padding:12px" placeholder="Type your response..."><button class="btn primary" onclick="sendChat()">Send</button><button class="btn secondary" onclick="toast('Voice chat placeholder — Gemini Live/voice backend later')">🎙</button></div>
+          <p class="muted" style="font-size:11px;margin-bottom:0">AI responses should be constrained by your backend safety policy and escalation rules. It should not replace a counsellor, doctor, lawyer, police officer, or emergency service.</p>
+        </div>
+      </section>
+
+      <section id="victim-legal" class="page">
+        <div class="head"><div><div class="eyebrow">Legal assistance</div><h1>Get legal information</h1><p>Choose how you want to access legal assistance. Gemini can power the conversational layer while approved legal content and human escalation remain authoritative.</p></div></div>
+        <div class="grid g3">
+          <div class="card"><div style="font-size:28px">💬</div><h2>Legal chatbot</h2><p>Ask questions about your case process, available assistance, documents and next steps in conversational form.</p><button class="btn primary small" onclick="toast('Legal chatbot placeholder — Gemini + approved legal knowledge base later')">Open legal chatbot</button></div>
+          <div class="card"><div style="font-size:28px">☎</div><h2>IVRS legal assistance</h2><p>Access legal information through an approved phone/IVRS flow when you cannot or do not want to use the app.</p><button class="btn secondary small" onclick="toast('IVRS legal assistance request placeholder')">Start IVRS flow</button></div>
+          <div class="card"><div style="font-size:28px">⚖</div><h2>Human legal support</h2><p>Request a human legal-aid follow-up when an AI answer is not enough.</p><button class="btn secondary small" onclick="toast('Human legal aid request placeholder')">Request legal aid</button></div>
+        </div>
+      </section>
+
+      <!-- CASE -->
+      <section id="victim-case" class="page">
+        <div class="head">
+          <div>
+            <div class="eyebrow">My case & documents</div>
+            <h1 id="casePageTitle">Add your case</h1>
+            <p id="casePageSubtitle">Upload your FIR, charge sheet or hearing notice. Once a case is added, this section becomes your case-details workspace.</p>
+          </div>
+          <span id="caseStatusPill" class="pill watch">Case not added</span>
+        </div>
+
+        <!-- EMPTY STATE: shown until a case/document is added -->
+        <div id="caseIngestionView">
+          <div class="card" style="padding:24px">
+            <div class="eyebrow">Select ingestion method</div>
+            <div class="grid g4" style="margin-top:12px">
+              <button id="documentMethod" class="case-method active" onclick="selectCaseMethod('document')">
+                <span class="case-method-icon">⌗</span>
+                <span><b>Document / Photo Scan</b><small>Upload FIR, Charge Sheet, or Notice</small></span>
+                <em>RECOMMENDED</em>
+              </button>
+              <button class="case-method" onclick="selectCaseMethod('cnr')">
+                <span class="case-method-icon">⌕</span>
+                <span><b>e-Courts CNR Lookup</b><small>Auto-fetch via 16-digit CNR</small></span>
+              </button>
+              <button class="case-method" onclick="selectCaseMethod('voice')">
+                <span class="case-method-icon">♩</span>
+                <span><b>Voice Statement</b><small>Speak in your native dialect</small></span>
+              </button>
+              <button class="case-method" onclick="selectCaseMethod('guided')">
+                <span class="case-method-icon">✎</span>
+                <span><b>Guided Questions</b><small>Simple step-by-step form</small></span>
+              </button>
+            </div>
+          </div>
+
+          <div id="caseDocumentBox" class="case-upload card">
+            <div class="case-upload-icon">☁</div>
+            <h2>Upload your FIR, Charge Sheet, or Hearing Notice</h2>
+            <p>Upload a clear PDF, JPG or PNG of the official paperwork.</p>
+            <p class="muted">The connected backend can extract case identifiers, dates, court information and section headings after upload.</p>
+            <input id="caseFileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" hidden onchange="handleCaseUpload(event)">
+            <button class="btn primary" onclick="document.getElementById('caseFileInput').click()">▣ Browse files from device</button>
+            <div id="caseUploadName" class="muted" style="margin-top:12px"></div>
+          </div>
+
+          <div id="caseAlternateBox" class="card hidden" style="margin-top:16px">
+            <h2 id="alternateCaseTitle">Case information</h2>
+            <p id="alternateCaseText" class="muted">Choose an ingestion method to continue.</p>
+            <div id="alternateCaseFields"></div>
+          </div>
+
+          <div class="case-sample card">
+            <div>
+              <b>No physical document with you right now?</b>
+              <p class="muted">Use the pre-loaded prototype case to see how the case-details view will look after ingestion.</p>
+            </div>
+            <button class="btn secondary small" onclick="loadSampleCase()">Scan sample FIR</button>
+          </div>
+        </div>
+
+        <!-- POPULATED STATE: only case details are shown after a case exists -->
+        <div id="caseDetailsView" class="hidden">
+          <div class="grid g4">
+            <div class="kpi"><div class="label">Current stage</div><div id="detailStage" class="metric" style="font-size:21px">Investigation</div><div id="detailCourt" class="muted">—</div></div>
+            <div class="kpi"><div class="label">Next hearing date</div><div id="detailHearing" class="metric">—</div><span id="detailDays" class="pill watch">—</span></div>
+            <div class="kpi"><div class="label">Relief / compensation</div><div id="detailRelief" class="metric" style="font-size:21px">—</div><div id="detailReliefAmount" class="muted">—</div></div>
+            <div class="kpi"><div class="label">Protection status</div><div id="detailProtection" class="metric" style="font-size:19px">—</div><div id="detailProtectionSub" class="muted">—</div></div>
+          </div>
+
+          <div class="section card">
+            <div class="head">
+              <div>
+                <div class="eyebrow">Case care summary & milestone intelligence</div>
+                <h2 style="margin:5px 0">Your case at a glance</h2>
+                <p class="muted">Plain-language case details, statutory milestones and authorised updates extracted from your uploaded case record.</p>
+              </div>
+              <button class="btn secondary small" onclick="resetCase()">Update case details</button>
+            </div>
+
+            <div class="case-record-grid">
+              <div class="case-detail"><div class="label">Case ID / CNR</div><b id="detailCaseId">—</b></div>
+              <div class="case-detail"><div class="label">Complaint / FIR date</div><b id="detailComplaintDate">—</b></div>
+              <div class="case-detail"><div class="label">Incident category</div><b id="detailCategory">—</b></div>
+              <div class="case-detail"><div class="label">Police station / jurisdiction</div><b id="detailPolice">—</b></div>
+              <div class="case-detail"><div class="label">Court</div><b id="detailCourtFull">—</b></div>
+              <div class="case-detail"><div class="label">Document source</div><b id="detailSource">Uploaded case document</b></div>
+            </div>
+          </div>
+
+          <div class="section card">
+            <div class="eyebrow">Statutory case lifecycle timeline</div>
+            <div id="caseTimeline" class="timeline"></div>
+          </div>
+
+          <div class="section grid g2">
+            <div class="card">
+              <h2>Case summary</h2>
+              <p id="detailNarrative" class="muted">Authorised case narrative will appear here after document processing.</p>
+            </div>
+            <div class="card">
+              <h2>Documents & authorised updates</h2>
+              <p id="detailDocuments" class="muted">Uploaded FIR, notices, orders and verified hearing updates associated with this case.</p>
+              <button class="btn secondary small" onclick="toast('Document repository placeholder')">View documents</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WELLBEING -->
+      <section id="victim-wellbeing" class="page">
+        <div class="head"><div><div class="eyebrow">Your well-being</div><h1>My progress</h1><p>See your own trend and the factors the system uses to explain changes.</p></div></div>
+        <div class="grid g2"><div class="card"><div class="label">Current distress</div><div class="metric">68 / 100</div><span class="pill elevated">Elevated</span><div class="section"><div class="label">7-day forecast</div><div class="metric">76</div><span class="pill elevated">Increasing</span></div></div><div class="card"><h2>Why it changed</h2><div class="reason"><div class="num">1</div><div><b>Recent distress trend</b><p>Recent check-ins are above your personal baseline.</p></div></div><div class="reason"><div class="num">2</div><div><b>Case context</b><p>An upcoming hearing is present in the current case timeline.</p></div></div><div class="reason"><div class="num">3</div><div><b>Engagement change</b><p>Recent responses differ from your previous pattern.</p></div></div></div></div>
+        <div class="section card"><h2>14-day trend</h2><div class="chart"><span class="bar" style="height:35%"></span><span class="bar" style="height:40%"></span><span class="bar" style="height:43%"></span><span class="bar" style="height:45%"></span><span class="bar" style="height:50%"></span><span class="bar" style="height:53%"></span><span class="bar" style="height:49%"></span><span class="bar" style="height:58%"></span><span class="bar" style="height:61%"></span><span class="bar" style="height:64%"></span><span class="bar" style="height:61%"></span><span class="bar" style="height:68%"></span></div><div class="muted" style="display:flex;justify-content:space-between"><span>14 days ago</span><span>Today</span></div></div>
+      </section>
+
+      <section id="victim-summary" class="page">
+        <div class="head"><div><div class="eyebrow">AI-generated summary</div><h1>My well-being summary</h1><p>This summary is generated from your approved check-in history by the Gemini-backed service. It is a support summary, not a diagnosis.</p></div><span class="pill watch">Generated 24 Sep</span></div>
+        <div class="card" style="border-left:4px solid var(--teal)">
+          <div class="eyebrow">Gemini summary</div>
+          <h2>What your recent check-ins indicate</h2>
+          <p class="muted">Over your recent check-ins, you have described increased worry around the ongoing case process and upcoming events. You have also described periods where rest and concentration are more difficult. Your responses indicate that having predictable updates and access to a trusted human support person may be helpful.</p>
+          <p class="muted">The system has detected a change from your recent personal baseline. This does not mean that you have a mental health condition. It means your responses may warrant a supportive follow-up.</p>
+        </div>
+        <div class="section grid g3">
+          <div class="card"><div class="label">Recent pattern</div><div class="metric" style="font-size:21px">Increasing distress</div><p class="muted">Based on recent check-in responses.</p></div>
+          <div class="card"><div class="label">Main themes</div><div class="metric" style="font-size:21px">Worry · sleep · case stress</div><p class="muted">Themes extracted from your responses.</p></div>
+          <div class="card"><div class="label">Suggested next step</div><div class="metric" style="font-size:21px">Human follow-up</div><p class="muted">Review with an authorised counsellor if you want support.</p></div>
+        </div>
+        <div class="section card"><h2>How this summary is produced</h2><div class="reason"><div class="num">1</div><div><b>Your check-ins</b><p>Open-ended text/voice responses are collected through approved channels.</p></div></div><div class="reason"><div class="num">2</div><div><b>AI analysis</b><p>Gemini can summarise themes and changes while the risk engine produces the formal distress indicators.</p></div></div><div class="reason"><div class="num">3</div><div><b>Human review</b><p>Escalations and interventions remain subject to authorised human review and your system's safety rules.</p></div></div></div>
+      </section>
+
+      <!-- SUPPORT -->
+      <section id="victim-support" class="page">
+        <div class="head"><div><div class="eyebrow">Human support</div><h1>Get support</h1><p>AI monitoring does not replace human professionals. Choose the kind of support you need.</p></div></div>
+        <div class="grid g3"><div class="card"><h2>Counsellor</h2><p>Request a counselling follow-up.</p><button class="btn primary small" onclick="toast('Counsellor request placeholder')">Request callback</button></div><div class="card"><h2>Legal aid</h2><p>Request assistance related to the case process.</p><button class="btn secondary small" onclick="toast('Legal aid request placeholder')">Request legal help</button></div><div class="card"><h2>Protection / relocation</h2><p>Raise a safety or protection support request for human review.</p><button class="btn danger small" onclick="safety()">Raise safety request</button></div></div>
+        <div class="section card"><h2>My support requests</h2><div class="table-wrap"><table class="table"><tr><th>Request</th><th>Status</th><th>Next step</th></tr><tr><td>Counselling</td><td><span class="pill watch">Pending</span></td><td>Assigned counsellor</td></tr><tr><td>Legal information</td><td><span class="pill stable">Completed</span></td><td>View response</td></tr></table></div></div>
+      </section>
+
+      <!-- PSYCHOLOGIST -->
+      <section id="psych-dashboard" class="page">
+        <div class="head"><div><div class="eyebrow">Psychologist / counsellor</div><h1>Well-being care dashboard</h1><p>Review mental well-being requests, longitudinal distress patterns and authorised case context for assigned victims.</p></div><span class="pill critical">2 new mental-health requests</span></div>
+        <div class="grid g4">
+          <div class="kpi"><div class="label">Assigned people</div><div class="metric">42</div></div>
+          <div class="kpi"><div class="label">Elevated</div><div class="metric">8</div></div>
+          <div class="kpi"><div class="label">Critical</div><div class="metric">2</div></div>
+          <div class="kpi"><div class="label">Pending sessions</div><div class="metric">6</div></div>
+        </div>
+        <div class="section card">
+          <h2>New mental well-being requests</h2>
+          <p class="muted">A notification is created when a victim explicitly requests mental-health support or when the approved escalation rule requires psychologist review.</p>
+          <div class="table-wrap"><table class="table">
+            <tr><th>Case</th><th>Request</th><th>Current score</th><th>Trend</th><th>Last check-in</th><th></th></tr>
+            <tr><td>SA-2048</td><td><span class="pill critical">Help requested</span></td><td>68 / 100</td><td>↑ Increasing</td><td>Today</td><td><button class="btn primary small" onclick="openPsychCase('SA-2048')">Open case</button></td></tr>
+            <tr><td>SA-1921</td><td><span class="pill elevated">Follow-up</span></td><td>61 / 100</td><td>↑</td><td>Yesterday</td><td><button class="btn primary small" onclick="openPsychCase('SA-1921')">Open case</button></td></tr>
+          </table></div>
+        </div>
+        <div id="psychCase" class="section card hidden">
+          <div class="head"><div><div class="eyebrow">Authorised case view</div><h2 id="psychCaseTitle" style="margin:5px 0">Case SA-2048</h2><p>Only the information needed for psychological support and authorised case coordination is shown.</p></div><button class="btn secondary small" onclick="document.getElementById('psychCase').classList.add('hidden')">Close</button></div>
+          <div class="grid g3">
+            <div class="case-detail"><div class="label">Current distress</div><div class="metric">68 / 100</div><span class="pill elevated">Elevated</span></div>
+            <div class="case-detail"><div class="label">7-day forecast</div><div class="metric">76</div><span class="pill elevated">Increasing</span></div>
+            <div class="case-detail"><div class="label">Support request</div><div class="metric" style="font-size:21px">Psychologist</div><span class="pill critical">New</span></div>
+          </div>
+          <div class="section grid g2">
+            <div class="card" style="box-shadow:none"><h3>Distress pattern</h3>
+              <div class="score-row"><span class="label" style="width:60px">Day 1</span><div class="score-track"><div class="score-fill" style="width:42%"></div></div><b>42</b></div>
+              <div class="score-row"><span class="label" style="width:60px">Day 4</span><div class="score-track"><div class="score-fill" style="width:51%"></div></div><b>51</b></div>
+              <div class="score-row"><span class="label" style="width:60px">Day 7</span><div class="score-track"><div class="score-fill" style="width:57%"></div></div><b>57</b></div>
+              <div class="score-row"><span class="label" style="width:60px">Day 10</span><div class="score-track"><div class="score-fill" style="width:63%"></div></div><b>63</b></div>
+              <div class="score-row"><span class="label" style="width:60px">Today</span><div class="score-track"><div class="score-fill" style="width:68%"></div></div><b>68</b></div>
+            </div>
+            <div class="card" style="box-shadow:none"><h3>Relevant case context</h3><p class="muted">Investigation stage · upcoming hearing · recent open-ended check-in submitted.</p><h3>AI-extracted themes</h3><p class="muted">Worry around case progression · sleep difficulty · need for predictable support.</p><button class="btn primary small" onclick="toast('Psychologist session / intervention record placeholder')">Record support action</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DISTRICT OFFICER -->
+      <section id="district-dashboard" class="page">
+        <div class="head"><div><div class="eyebrow">District officer</div><h1>Case assistance dashboard</h1><p>Monitor legal-assistance requests, protection needs, rehabilitation and other authorised administrative actions.</p></div><span class="pill critical">1 new legal request</span></div>
+        <div class="grid g4"><div class="kpi"><div class="label">Active cases</div><div class="metric">84</div></div><div class="kpi"><div class="label">Legal requests</div><div class="metric">7</div></div><div class="kpi"><div class="label">Protection requests</div><div class="metric">3</div></div><div class="kpi"><div class="label">Pending actions</div><div class="metric">12</div></div></div>
+        <div class="section card">
+          <h2>New assistance requests</h2>
+          <p class="muted">Notifications appear here when a victim requests legal assistance, protection, rehabilitation or another district-level service.</p>
+          <div class="table-wrap"><table class="table">
+            <tr><th>Case</th><th>Request</th><th>Stage</th><th>Priority</th><th></th></tr>
+            <tr><td>SA-2048</td><td><span class="pill critical">Legal assistance</span></td><td>Investigation</td><td>New</td><td><button class="btn primary small" onclick="openDistrictCase()">Open case</button></td></tr>
+            <tr><td>SA-1934</td><td><span class="pill watch">Rehabilitation</span></td><td>Rehabilitation</td><td>Pending</td><td><button class="btn secondary small" onclick="toast('District case review placeholder')">Review</button></td></tr>
+          </table></div>
+        </div>
+        <div id="districtCase" class="section card hidden">
+          <div class="head"><div><div class="eyebrow">Authorised case view</div><h2 style="margin:5px 0">Case SA-2048 · Legal assistance</h2><p>Complete authorised case information for district-level coordination and legal assistance.</p></div><button class="btn secondary small" onclick="document.getElementById('districtCase').classList.add('hidden')">Close</button></div>
+          <div class="grid g3">
+            <div class="case-detail"><div class="label">Case stage</div><div class="metric" style="font-size:21px">Investigation</div></div>
+            <div class="case-detail"><div class="label">Requested service</div><div class="metric" style="font-size:21px">Legal assistance</div></div>
+            <div class="case-detail"><div class="label">Next hearing</div><div class="metric">14 Oct</div></div>
+          </div>
+          <div class="section">
+            <div class="card" style="box-shadow:none">
+              <div class="eyebrow">Complete authorised case record</div>
+              <h3>Case details</h3>
+              <div class="grid g3">
+                <div><div class="label">Victim / complainant</div><b>Case-linked profile</b></div>
+                <div><div class="label">Complaint / case ID</div><b>SA-2048</b></div>
+                <div><div class="label">Case stage</div><b>Investigation</b></div>
+                <div><div class="label">Incident category</div><b>Atrocity / violence case</b></div>
+                <div><div class="label">Complaint date</div><b>18 Aug 2026</b></div>
+                <div><div class="label">Next hearing</div><b>14 Oct 2026</b></div>
+              </div>
+              <div class="section grid g2">
+                <div>
+                  <h4>Case narrative / complaint summary</h4>
+                  <p class="muted">Authorised complaint facts and the latest verified case summary appear here after backend integration.</p>
+                </div>
+                <div>
+                  <h4>Investigation & proceedings</h4>
+                  <p class="muted">Investigation status, authorised officers, hearing history, court updates and pending actions appear here.</p>
+                </div>
+                <div>
+                  <h4>Relief, compensation & rehabilitation</h4>
+                  <p class="muted">Track approved relief, compensation status, rehabilitation measures and outstanding administrative actions.</p>
+                </div>
+                <div>
+                  <h4>Protection / safety</h4>
+                  <p class="muted">Show authorised protection requests, threat-related alerts and protection measures relevant to district coordination.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section card">
+            <div class="eyebrow">Legal representation</div>
+            <h3>Assign / manage lawyer</h3>
+            <p class="muted">The district officer can assign an authorised legal-aid lawyer to this case and track the assignment. The actual lawyer roster, eligibility and approval workflow will come from the backend.</p>
+            <div class="grid g3">
+              <div class="field"><label>Lawyer</label><select id="lawyerSelect"><option value="">Select authorised lawyer</option><option>Adv. Ananya Sen — Legal Aid Panel</option><option>Adv. R. Chatterjee — Legal Aid Panel</option><option>Adv. S. Mukherjee — Legal Aid Panel</option></select></div>
+              <div class="field"><label>Assignment type</label><select><option>Legal aid representation</option><option>Case consultation</option><option>Court appearance support</option></select></div>
+              <div class="field"><label>Assignment note</label><input id="lawyerNote" placeholder="Reason / instruction for assignment"></div>
+            </div>
+            <div class="actions"><button class="btn primary" onclick="assignLawyer()">Assign lawyer</button><button class="btn secondary" onclick="toast('Lawyer history placeholder')">View assignment history</button></div>
+            <div id="lawyerStatus" class="hidden" style="margin-top:13px;padding:11px;border-radius:10px;background:#eaf6ef;color:#2f7c55;font-size:12px;font-weight:700"></div>
+          </div>
+
+          <div class="section grid g2">
+            <div class="card" style="box-shadow:none"><h3>Coordination</h3><p class="muted">Coordinate with authorised legal-aid, protection and rehabilitation services. The district role gets the case information necessary for administrative/legal coordination.</p></div>
+            <div class="card" style="box-shadow:none"><h3>Documents & court updates</h3><p class="muted">Authorised FIR/complaint records, notices, hearing updates, orders and uploaded supporting documents can be surfaced here after backend integration.</p><button class="btn secondary small" onclick="toast('Document repository placeholder')">Open documents</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN -->
+      <section id="admin-dashboard" class="page">
+        <div class="head"><div><div class="eyebrow">State / national monitoring</div><h1>Programme overview</h1><p>Aggregated monitoring for policy and administration. Individual victim details are intentionally excluded from this view.</p></div></div>
+        <div class="grid g4"><div class="kpi"><div class="label">Active monitored cases</div><div class="metric">1,284</div></div><div class="kpi"><div class="label">Elevated</div><div class="metric">184</div></div><div class="kpi"><div class="label">Escalation risk</div><div class="metric">37</div></div><div class="kpi"><div class="label">Critical alerts</div><div class="metric">6</div></div></div>
+        <div class="section grid g2"><div class="card"><h2>Risk distribution</h2><div class="section"><div class="label">Stable · 71%</div><div class="progress"><span style="width:71%"></span></div><div class="label" style="display:block;margin-top:12px">Watch · 18%</div><div class="progress"><span style="width:18%"></span></div><div class="label" style="display:block;margin-top:12px">Elevated · 8%</div><div class="progress"><span style="width:8%"></span></div><div class="label" style="display:block;margin-top:12px">Critical · 3%</div><div class="progress"><span style="width:3%"></span></div></div></div><div class="card"><h2>7-day escalation trend</h2><div class="chart"><span class="bar" style="height:36%"></span><span class="bar" style="height:42%"></span><span class="bar" style="height:45%"></span><span class="bar" style="height:51%"></span><span class="bar" style="height:57%"></span><span class="bar" style="height:65%"></span><span class="bar" style="height:70%"></span></div><div class="muted" style="display:flex;justify-content:space-between"><span>7 days ago</span><span>Today</span></div></div></div>
+        <div class="section grid g3"><div class="card"><h3>District analytics</h3><p>Aggregated distress, alerts and intervention demand by district.</p></div><div class="card"><h3>State analytics</h3><p>Monitor trends, service capacity and unresolved support needs.</p></div><div class="card"><h3>Policy indicators</h3><p>Longitudinal evidence for programme planning and resource allocation.</p></div></div>
+      </section>
+    </div>
+  </main>
+</section>
+
+<div id="safetyModal" class="modal"><div class="modalbox"><div class="eyebrow">Immediate safety support</div><h2>Are you in immediate danger?</h2><p class="muted">In the real system, this path bypasses the normal AI assessment and routes to the designated human/helpline mechanism.</p><div style="background:#fff6e5;border:1px solid #efd7a6;padding:12px;border-radius:11px;font-size:12px">Prototype only — no real call or alert is placed from this UI.</div><div class="actions"><button class="btn danger" onclick="toast('Immediate human escalation placeholder');closeSafety()">Request immediate help</button><button class="btn secondary" onclick="closeSafety()">Go back</button></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+let selectedRole=null,currentRole=null;
+function sendChat(){
+ const input=document.getElementById('chatInput');
+ const text=input.value.trim();
+ if(!text)return;
+ const box=document.getElementById('chatMessages');
+ const u=document.createElement('div');
+ u.style.cssText='justify-self:end;background:#e7f2f0;border-radius:13px;padding:11px 13px;max-width:75%;font-size:13px';
+ u.textContent=text; box.appendChild(u);
+ input.value='';
+ setTimeout(()=>{
+   const a=document.createElement('div');
+   a.style.cssText='background:#f4f8f8;border-radius:13px;padding:11px 13px;max-width:75%;font-size:13px';
+   a.innerHTML='<b>SAATHI AI</b><div style="margin-top:4px;color:#66757e">Thank you for sharing that. In the connected backend, Gemini will respond using the approved support policy and can route the conversation to human assistance when required.</div>';
+   box.appendChild(a);
+ },350);
+}
+let caseUploaded=false;
+let currentCase=null;
+
+function selectCaseMethod(method){
+  document.querySelectorAll('.case-method').forEach(x=>x.classList.remove('active'));
+  const map={document:'documentMethod'};
+  if(map[method])document.getElementById(map[method]).classList.add('active');
+  const upload=document.getElementById('caseDocumentBox');
+  const alt=document.getElementById('caseAlternateBox');
+  if(method==='document'){
+    upload.classList.remove('hidden'); alt.classList.add('hidden');
+    return;
+  }
+  upload.classList.add('hidden'); alt.classList.remove('hidden');
+  const title=document.getElementById('alternateCaseTitle');
+  const text=document.getElementById('alternateCaseText');
+  const fields=document.getElementById('alternateCaseFields');
+  if(method==='cnr'){
+    title.textContent='e-Courts CNR lookup'; text.textContent='Enter the 16-digit CNR to fetch the authorised case record.';
+    fields.innerHTML='<div class="field"><label>16-digit CNR</label><input placeholder="Enter CNR"><button class="btn primary small" style="margin-top:8px" onclick="loadSampleCase()">Fetch case</button></div>';
+  }else if(method==='voice'){
+    title.textContent='Voice statement'; text.textContent='Speak your case details in your preferred language. The connected backend can transcribe and structure the information.';
+    fields.innerHTML='<button class="btn primary small" onclick="loadSampleCase()">🎙 Start voice statement</button>';
+  }else{
+    title.textContent='Guided case questions'; text.textContent='Enter the basic case information step by step.';
+    fields.innerHTML='<div class="field"><label>Case / FIR number</label><input placeholder="Enter case number"></div><button class="btn primary small" style="margin-top:12px" onclick="loadSampleCase()">Continue</button>';
+  }
+}
+
+function handleCaseUpload(event){
+  const file=event.target.files && event.target.files[0];
+  if(!file)return;
+  document.getElementById('caseUploadName').textContent='Selected: '+file.name;
+  // Prototype behavior: successful selection represents backend ingestion.
+  setTimeout(()=>loadCase({source:file.name}),250);
+}
+
+function loadSampleCase(){
+  loadCase({source:'Pre-loaded Special Sessions Court sample FIR'});
+}
+
+function loadCase(meta={}){
+  caseUploaded=true;
+  currentCase={
+    id:'SA-2048', stage:'Witness Deposition & Cross-Examination', court:'Special Sessions Court No. 4, Pune',
+    hearing:'02 Oct 2026', days:'8 Days Remaining', relief:'50% Disbursed', reliefAmount:'₹5,00,000 · Annexure 1 Schedule',
+    protection:"Category 'B' (Protection of Life & Property)", protectionSub:'DLSA Protocol Active',
+    complaintDate:'April 2025', category:'Atrocity / violence case', police:'Authorised case jurisdiction',
+    narrative:'Authorised complaint facts and the latest verified case summary are displayed from the ingested case record. Personal identifiers remain limited to the authorised case view.',
+    source:meta.source || 'Uploaded case document'
+  };
+  renderCaseDetails();
+  toast('Case details loaded');
+}
+
+function renderCaseDetails(){
+  const c=currentCase; if(!c)return;
+  document.getElementById('caseIngestionView').classList.add('hidden');
+  document.getElementById('caseDetailsView').classList.remove('hidden');
+  document.getElementById('casePageTitle').textContent='Your case at a glance';
+  document.getElementById('casePageSubtitle').textContent='Plain-language summary of your authorised case details, statutory timelines and assigned protections.';
+  document.getElementById('caseStatusPill').textContent='Case Active';
+  document.getElementById('caseStatusPill').className='pill stable';
+  document.getElementById('detailStage').textContent=c.stage;
+  document.getElementById('detailCourt').textContent=c.court;
+  document.getElementById('detailHearing').textContent=c.hearing;
+  document.getElementById('detailDays').textContent=c.days;
+  document.getElementById('detailRelief').textContent=c.relief;
+  document.getElementById('detailReliefAmount').textContent=c.reliefAmount;
+  document.getElementById('detailProtection').textContent=c.protection;
+  document.getElementById('detailProtectionSub').textContent=c.protectionSub;
+  document.getElementById('detailCaseId').textContent=c.id;
+  document.getElementById('detailComplaintDate').textContent=c.complaintDate;
+  document.getElementById('detailCategory').textContent=c.category;
+  document.getElementById('detailPolice').textContent=c.police;
+  document.getElementById('detailCourtFull').textContent=c.court;
+  document.getElementById('detailSource').textContent=c.source;
+  document.getElementById('detailNarrative').textContent=c.narrative;
+  document.getElementById('caseTimeline').innerHTML=`
+    <div class="event completed"><strong>FIR Registered & Relief Tranche 1 (25%)</strong><small>April 2025 · Registered under Sec 3(1)(r), 3(1)(s) PoA Act.</small></div>
+    <div class="event completed"><strong>Chargesheet Filed & Relief Tranche 2 (50%)</strong><small>June 2025 · Cognisance taken by Special Sessions Court No. 4.</small></div>
+    <div class="event upcoming"><strong>Upcoming: Witness Examination & Deposition</strong><small>2026-10-02 · Complainant witness cross-examination.</small></div>
+    <div class="event pending"><strong>Final Judgment & Rehabilitation (Remaining 25%)</strong><small>Target 2027 · Final conclusion and economic reintegration grant.</small></div>`;
+}
+
+function resetCase(){
+  currentCase=null; caseUploaded=false;
+  document.getElementById('caseIngestionView').classList.remove('hidden');
+  document.getElementById('caseDetailsView').classList.add('hidden');
+  document.getElementById('casePageTitle').textContent='Add your case';
+  document.getElementById('casePageSubtitle').textContent='Upload your FIR, charge sheet or hearing notice. Once a case is added, this section becomes your case-details workspace.';
+  document.getElementById('caseStatusPill').textContent='Case not added';
+  document.getElementById('caseStatusPill').className='pill watch';
+  document.getElementById('caseFileInput').value='';
+  document.getElementById('caseUploadName').textContent='';
+}
+
+function setAuthMode(mode){
+  document.getElementById('loginTab').classList.toggle('active',mode==='login');
+  document.getElementById('signupTab').classList.toggle('active',mode==='signup');
+  document.getElementById('authTitle').textContent=mode==='login'?'Welcome back to SAATHI':'Create your SAATHI account';
+  document.getElementById('authSubtitle').textContent=mode==='login'?'Choose your role and sign in to your secure workspace.':'Choose your role, create your password, verify your OTP, then finish account setup.';
+  clearAuthErrors();
+  if(!selectedRole){
+    showAuthStep('authStepRole');
+    return;
+  }
+  if(mode==='login') showAuthStep('loginFlow');
+  else showAuthStep('signupStepAccount');
+}
+function showAuthStep(id){
+  document.querySelectorAll('.auth-step').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('authHint').textContent='';
+}
+function chooseAuthRole(role){
+  selectedRole=role;
+  const meta={
+    victim:{name:'Victim / User',icon:'♡'},
+    counsellor:{name:'Psychologist / Counsellor',icon:'+'},
+    district:{name:'District Officer',icon:'⚖'},
+    admin:{name:'State / National Administrator',icon:'▤'}
+  }[role];
+  document.getElementById('loginRoleName').textContent=meta.name;
+  document.getElementById('loginRoleIcon').textContent=meta.icon;
+  document.getElementById('signupRoleName').textContent=meta.name;
+  document.getElementById('signupRoleIcon').textContent=meta.icon;
+  const signup=document.getElementById('signupTab').classList.contains('active');
+  showAuthStep(signup?'signupStepAccount':'loginFlow');
+}
+function backToRole(){
+  showAuthStep('authStepRole');
+  document.getElementById('authHint').textContent='Select a role above to continue.';
+}
+function togglePassword(id,btn){
+  const input=document.getElementById(id);
+  input.type=input.type==='password'?'text':'password';
+  btn.textContent=input.type==='password'?'Show':'Hide';
+}
+function updatePasswordStrength(){
+  const p=document.getElementById('signupPassword').value;
+  let score=0;
+  if(p.length>=8)score++;
+  if(/[a-z]/.test(p))score++;
+  if(/[A-Z]/.test(p))score++;
+  if(/[0-9]/.test(p))score++;
+  if(/[^A-Za-z0-9]/.test(p))score++;
+  const meter=document.getElementById('passwordMeter');
+  meter.style.width=(score*20)+'%';
+  meter.style.background=score<3?'#b64a49':score<5?'#b27b27':'#3f8c65';
+  document.getElementById('passwordHint').textContent=score===5?'Strong password.':score>=3?'Good — add the remaining character types for a stronger password.':'Use 8+ characters with uppercase, lowercase, number and symbol.';
+}
+let signupOtpCode=null,signupDraft=null;
+function validPhone(v){return /^[6-9]\d{9}$/.test(v)}
+function createAccountAndSendOTP(){
+  const name=document.getElementById('signupName').value.trim();
+  const phone=document.getElementById('signupPhone').value.replace(/\D/g,'');
+  const email=document.getElementById('signupEmail').value.trim();
+  const password=document.getElementById('signupPassword').value;
+  const confirm=document.getElementById('signupConfirm').value;
+  const err=document.getElementById('signupError');
+  err.style.display='none';
+  if(!name||!validPhone(phone)||password.length<8||password!==confirm){
+    err.textContent=!name?'Enter your full name.':!validPhone(phone)?'Enter a valid 10-digit Indian mobile number.':password.length<8?'Password must contain at least 8 characters.':'Passwords do not match.';
+    err.style.display='block';return;
+  }
+  if(!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){
+    err.textContent='Password must include uppercase, lowercase, number and symbol.';
+    err.style.display='block';return;
+  }
+  signupOtpCode=String(Math.floor(100000+Math.random()*900000));
+  signupDraft={name,phone,email,password,role:selectedRole};
+  document.getElementById('otpDestination').textContent='We sent a one-time password to +91 '+phone.slice(0,2)+'••••••'+phone.slice(-2)+'.';
+  document.getElementById('demoOtp').textContent='Prototype OTP: '+signupOtpCode+' · In production this code is sent by your OTP provider.';
+  document.getElementById('demoOtp').classList.remove('hidden');
+  document.getElementById('signupOtp').value='';
+  showAuthStep('signupStepOtp');
+}
+function resendSignupOTP(){
+  if(!signupDraft){return}
+  signupOtpCode=String(Math.floor(100000+Math.random()*900000));
+  document.getElementById('demoOtp').textContent='New prototype OTP: '+signupOtpCode+' · In production this code is sent by your OTP provider.';
+  document.getElementById('demoOtp').classList.remove('hidden');
+  toast('A new OTP was generated for the prototype.');
+}
+function verifySignupOTP(){
+  const code=document.getElementById('signupOtp').value.trim();
+  const err=document.getElementById('otpError');
+  if(code!==signupOtpCode){
+    err.textContent='Incorrect OTP. Enter the 6-digit code sent to your mobile.';
+    err.style.display='block';return;
+  }
+  err.style.display='none';
+  document.getElementById('profilePhone').value='+91 '+signupDraft.phone;
+  showAuthStep('signupStepSetup');
+}
+function goSignupAccount(){showAuthStep('signupStepAccount')}
+function finishSignup(){
+  const location=document.getElementById('profileLocation').value.trim();
+  const err=document.getElementById('setupError');
+  if(!location){
+    err.textContent='Enter your city or district to complete setup.';
+    err.style.display='block';return;
+  }
+  err.style.display='none';
+  localStorage.setItem('saathiDemoUser',JSON.stringify({
+    name:signupDraft.name,phone:signupDraft.phone,email:signupDraft.email,role:signupDraft.role,
+    language:document.getElementById('profileLanguage').value,location
+  }));
+  currentRole=signupDraft.role;
+  document.getElementById('landing').style.display='none';
+  document.getElementById('app').style.display='block';
+  buildNav();
+  if(currentRole==='victim')showPage('victim-home');
+  else if(currentRole==='counsellor')showPage('psych-dashboard');
+  else if(currentRole==='district')showPage('district-dashboard');
+  else showPage('admin-dashboard');
+  toast('Account created and mobile number verified.');
+}
+function clearAuthErrors(){
+  document.querySelectorAll('.form-error').forEach(e=>{e.style.display='none';e.textContent=''});
+}
+function login(){
+  if(!selectedRole){toast('Select a role first');return}
+  const id=document.getElementById('loginId').value.trim();
+  const pw=document.getElementById('loginPassword').value;
+  const err=document.getElementById('loginError');
+  if(!id||!pw){err.textContent='Enter your registered ID/mobile and password.';err.style.display='block';return}
+  err.style.display='none';
+  currentRole=selectedRole;
+  document.getElementById('landing').style.display='none';
+  document.getElementById('app').style.display='block';
+  buildNav();
+  if(currentRole==='victim')showPage('victim-home');
+  else if(currentRole==='counsellor')showPage('psych-dashboard');
+  else if(currentRole==='district')showPage('district-dashboard');
+  else showPage('admin-dashboard');
+}
+function buildNav(){
+ const nav=document.getElementById('nav');
+ if(currentRole==='victim'){
+   document.getElementById('roleName').textContent='Victim / Complainant';
+   document.getElementById('notifBell').classList.add('hidden');
+   nav.innerHTML=`<button onclick="showPage('victim-home')">⌂ Overview</button><button onclick="showPage('victim-test')">◉ Well-being check</button><button onclick="showPage('victim-ai')">✦ AI support</button><button onclick="showPage('victim-case')">▣ My case</button><button onclick="showPage('victim-wellbeing')">◌ My progress</button><button onclick="showPage('victim-summary')">▤ My summary</button><button onclick="showPage('victim-legal')">⚖ Legal assistance</button><button onclick="showPage('victim-support')">♡ Support</button>`;
+ }else if(currentRole==='counsellor'){
+   document.getElementById('roleName').textContent='Psychologist / Counsellor';
+   setupNotifications('psychologist');
+   nav.innerHTML=`<button onclick="showPage('psych-dashboard')">◉ Well-being cases</button>`;
+ }else if(currentRole==='district'){
+   document.getElementById('roleName').textContent='District Officer';
+   setupNotifications('district');
+   nav.innerHTML=`<button onclick="showPage('district-dashboard')">⚖ Assistance requests</button>`;
+ }else{
+   document.getElementById('roleName').textContent='State / National Administrator';
+   document.getElementById('notifBell').classList.add('hidden');
+   nav.innerHTML=`<button onclick="showPage('admin-dashboard')">▤ Programme overview</button>`;
+ }
+}
+function showPage(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
+ window.scrollTo({top:0,behavior:'smooth'});
+
+}
+function renderQuestion(){
+ document.getElementById('question').textContent=questions[qi];
+ document.getElementById('qLabel').textContent=`Question ${qi+1} of ${questions.length}`;
+ const pct=Math.round(((qi+1)/questions.length)*100);
+ document.getElementById('progressText').textContent=pct+'%';
+ document.getElementById('progressBar').style.width=pct+'%';
+ const box=document.getElementById('options');box.innerHTML='';
+ options.forEach((o,i)=>{
+   const b=document.createElement('button');b.className='test-option';b.textContent=o;
+   b.onclick=()=>{document.querySelectorAll('.test-option').forEach(x=>x.style.borderColor='');b.style.borderColor='#2d8d87';answered=true;document.getElementById('nextBtn').disabled=false};
+   box.appendChild(b);
+ });
+ document.getElementById('nextBtn').textContent=qi===questions.length-1?'Finish check-in':'Continue';
+ document.getElementById('nextBtn').disabled=true;answered=false;
+}
+function nextQuestion(){
+ if(!answered)return;
+ if(qi<questions.length-1){qi++;renderQuestion()}
+ else{toast('Check-in captured. Backend will calculate the real score, trajectory and forecast.');qi=0;setTimeout(()=>showPage('victim-home'),500)}
+}
+function safety(){document.getElementById('safetyModal').classList.add('show')}
+function closeSafety(){document.getElementById('safetyModal').classList.remove('show')}
+function setupNotifications(type){
+ const bell=document.getElementById('notifBell');
+ bell.classList.remove('hidden');
+ const panel=document.getElementById('notificationPanel');
+ if(type==='psychologist'){
+   document.getElementById('notifCount').textContent='2';
+   panel.innerHTML=`<div class="notif-head"><b>Notifications</b><button class="btn secondary small" onclick="toggleNotifications()">×</button></div>
+   <div class="notif-item unread"><b>New mental well-being request · SA-2048</b><p>Victim explicitly requested psychological support after the latest check-in.</p><button class="btn primary small" onclick="showPage('psych-dashboard');openPsychCase('SA-2048');toggleNotifications()">Open case</button></div>
+   <div class="notif-item unread"><b>Distress trend escalation · SA-1921</b><p>Longitudinal pattern crossed the configured psychologist-review threshold.</p><button class="btn secondary small" onclick="showPage('psych-dashboard');openPsychCase('SA-1921');toggleNotifications()">Review</button></div>`;
+ }else{
+   document.getElementById('notifCount').textContent='1';
+   panel.innerHTML=`<div class="notif-head"><b>Notifications</b><button class="btn secondary small" onclick="toggleNotifications()">×</button></div>
+   <div class="notif-item unread"><b>New legal assistance request · SA-2048</b><p>Victim requested legal information/support through the app.</p><button class="btn primary small" onclick="showPage('district-dashboard');openDistrictCase();toggleNotifications()">Open request</button></div>`;
+ }
+}
+function toggleNotifications(){document.getElementById('notificationPanel').classList.toggle('hidden')}
+function openPsychCase(id){
+ document.getElementById('psychCaseTitle').textContent='Case '+id;
+ document.getElementById('psychCase').classList.remove('hidden');
+ window.scrollTo({top:document.getElementById('psychCase').offsetTop-90,behavior:'smooth'});
+}
+function openDistrictCase(){
+ document.getElementById('districtCase').classList.remove('hidden');
+ window.scrollTo({top:document.getElementById('districtCase').offsetTop-90,behavior:'smooth'});
+}
+function assignLawyer(){
+ const lawyer=document.getElementById('lawyerSelect').value;
+ const note=document.getElementById('lawyerNote').value.trim();
+ const status=document.getElementById('lawyerStatus');
+ if(!lawyer){toast('Select an authorised lawyer first');return}
+ status.textContent='Assignment recorded in the prototype: '+lawyer+(note?' · '+note:'');
+ status.classList.remove('hidden');
+ toast('Lawyer assignment recorded');
+}
+function logout(){currentRole=null;selectedRole=null;signupDraft=null;signupOtpCode=null;document.getElementById('app').style.display='none';document.getElementById('landing').style.display='grid';document.getElementById('loginId').value='';document.getElementById('loginPassword').value='';setAuthMode('login');backToRole();}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',2800)}
+</script>
+</body>
+</html>
