@@ -1,126 +1,412 @@
-# SAHAYA — corrected local build
+SAHAYA — The AI flags. A human decides.
 
-SAHAYA is a React + FastAPI well-being/support platform with a strict administrative hierarchy, local ML inference, server-side Gemini support, case-document upload, notifications, and role-scoped dashboards.
+<p align="center">
+  <strong>AI-powered Dynamic Mental Health Monitoring & Distress Support Platform</strong>
+</p><p align="center">
+  <img src="https://img.shields.io/badge/Smart%20India%20Hackathon-2026-orange?style=for-the-badge">
+  <img src="https://img.shields.io/badge/PS-SIH26094-blue?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Category-Software-success?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Theme-MedTech%20%2F%20HealthTech-purple?style=for-the-badge">
+</p><p align="center">
+  <strong>Team CodeYappers</strong>
+</p>---
 
-## Current implementation
+📌 Table of Contents
 
-- Public Victim/User signup uses **password + date of birth**. OTP/Twilio/PyOTP is not required.
-- Normal login works for all seeded demo personas through the same `/api/v1/auth/login` endpoint.
-- Administrative hierarchy is enforced server-side:
+- "About The Project" (#-about-the-project)
+- "The Problem" (#-the-problem)
+- "Our Solution" (#-our-solution)
+- "How It Works" (#-how-it-works)
+- "Tech Stack" (#-tech-stack)
+- "System Architecture" (#-system-architecture)
+- "Getting Started" (#-getting-started)
+- "Usage" (#-usage)
+- "Testing & Auditing" (#-testing--auditing)
+- "Project Structure" (#-project-structure)
+- "Impact & Benefits" (#-impact--benefits)
+- "Future Scope" (#-future-scope)
+- "Research & References" (#-research--references)
+- "Team" (#-team)
+- "License" (#-license)
 
-```text
-National Administrator
-        ↓
-State Administrator
-        ↓
-District Administrator
-        ↓
-Counsellor
-```
+---
 
-- National Administrators can create State Administrators.
-- State Administrators can create District Administrators only inside their state.
-- District Administrators can appoint Counsellors only inside their district.
-- Victim/User case uploads accept PDF/JPG/JPEG/PNG up to 10 MB and automatically create a private case if the user has none.
-- Case uploads and human support requests create scoped notifications for the relevant administrators/counsellors.
-- Dashboards poll notifications so new events appear without a manual refresh.
-- Administrators can view authorised user profile/contact/case/support/check-in metadata within their scope.
-- Counsellors can view users connected to their active assignments.
-- The 10-question open-ended well-being check submits all answers through the supplied TF-IDF + Logistic Regression baseline and an additional backend-only DistilBERT emotion classifier. The emotion classifier is not a distress, diagnostic, or clinically validated model.
-- Voice recording uses the browser microphone and server-side Gemini transcription when `GEMINI_API_KEY` is configured.
-- Gemini has both the official `google-genai` SDK path and an HTTP fallback so a missing SDK package does not silently break AI support.
+🧠 About The Project
 
-## Backend
+SAHAYA is an AI-powered dynamic well-being monitoring and support platform designed for victims and complainants under the SC/ST (Prevention of Atrocities) Act throughout investigation, trial, and rehabilitation.
 
-```bash
-cd backend
-python3 -m pip install -r requirements.txt
-python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
+Legal cases move through milestones, but a person's well-being can change continuously.
 
-Health:
+SAHAYA provides:
 
-```text
-http://127.0.0.1:8000/health
-```
+- Consent-based periodic well-being check-ins
+- Text, voice, and AI-assisted interaction
+- Explainable ML-based emotional signals
+- Deterministic priority classification
+- Human-routed escalation
+- Role-based dashboards
+- Case-document management
+- Notifications and audit-oriented records
 
-Gemini health:
+«The AI flags. A human decides.»
 
-```text
-http://127.0.0.1:8000/api/v1/ai/health
-```
+SAHAYA is a support tool, not a diagnostic system. All demonstration data is synthetic.
 
-Put the Gemini key **only** in `backend/.env`:
+---
 
-```env
-GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-3.8-flash
-```
+⚠️ The Problem
 
-Restart FastAPI after changing `.env`.
+A legal case can progress from investigation to trial while the victim's changing well-being remains difficult to monitor.
 
-## Development database
+Existing gaps
 
-The included `backend/sahaya.db` is a current-schema development database containing the synthetic hierarchy and demo records.
+- No continuous well-being monitoring between case milestones
+- Support requests can remain disconnected from case workflows
+- Manual prioritisation of support needs
+- Fragmented access to case and support information
+- Limited coordination between victims, counsellors and administrators
+- Risk of AI systems making opaque or inappropriate decisions
 
-To recreate demo data from the current schema:
+«The challenge: identify changing distress signals early while keeping the final decision with a human.»
 
-```bash
-SAHAYA_ENV=development python3 -m app.db.init_db
-SAHAYA_ENV=development python3 -m app.demo.seed_demo
-```
+---
 
-Or use:
+💡 Our Solution
 
-```bash
-SAHAYA_ENV=development ./scripts/seed-demo.sh
-```
+SAHAYA creates a human-in-the-loop support pipeline:
 
-## Frontend
+Check-in
+   ↓
+ML Analysis
+   ↓
+Priority Classification
+   ↓
+Human Escalation
+   ↓
+Counselling / Support
+   ↓
+Audit Record
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+The system combines local ML inference, rule-based prioritisation, Gemini-powered assistance, and a strict administrative hierarchy.
 
-The frontend expects:
+AI provides signals — humans take action.
 
-```text
-http://127.0.0.1:8000/api/v1
-```
+---
 
-See `frontend/.env.development`.
+🔄 How It Works
 
-## Demo accounts
+1. Role-Based Access
 
-See `docs/DEMO_ACCOUNTS.md`.
+Victims, counsellors, district, state and national administrators receive role-specific access.
 
-All demo accounts are synthetic and development-only.
+2. Well-being Check-in
 
+Users submit open-ended responses through text, voice or supported AI interaction.
 
-## Latest integration repair
+3. ML Analysis
 
-- Administrator dashboard defaults to live/non-demo data; use **Show demo data** only for testing.
-- Administrator counters and escalation trend refresh automatically.
-- Clicking a notification opens the linked help-seeking user's authorised details and case/document metadata. Backend scope checks remain enforced.
-- Support requests are routed to the administrative hierarchy; counsellors receive case notifications after an actual active assignment rather than receiving every district request.
-- Case-document uploads notify the authorised hierarchy and active assigned counsellors.
-- The victim dashboard displays the latest real ML classifier confidence and a confidence trend from stored check-ins.
-- The baseline classifier is the supplied TF-IDF + Logistic Regression artifact. The supplemental emotion checkpoint is `bhadresh-savani/distilbert-base-uncased-emotion` (Hugging Face revision `ce6f4ffcde7642ca2cac02381a16da38e5498ff7`), fine-tuned on the DAIR.AI Emotion six-class dataset (`sadness`, `joy`, `love`, `anger`, `fear`, `surprise`).
-- Voice input uses browser SpeechRecognition when available, then recorded-audio Gemini transcription as fallback. **pyttsx3 is text-to-speech, not speech-to-text**, so it is used for the AI "Read aloud" action.
-- Run `scripts/set_gemini_key.sh` to set the Gemini key without putting it in the frontend or committing it.
+Responses are processed using a TF-IDF + Logistic Regression baseline, with a supplemental DistilBERT emotion model.
 
-## Run
+4. Priority Engine
 
-```bash
+Signals are converted into operational priorities:
+
+HIGH
+STANDARD
+REVIEW
+
+5. AI Support
+
+Gemini provides calm, policy-constrained assistance without diagnosing the user.
+
+6. Human Escalation
+
+Relevant cases are routed to counsellors or authorised administrators according to role and assignment.
+
+7. Case & Audit Tracking
+
+Check-ins, support requests, case documents and relevant actions are recorded for authorised access.
+
+---
+
+🛠️ Tech Stack
+
+Layer| Technology
+Frontend| React + TypeScript
+Styling| TailwindCSS
+HTTP| Axios
+Backend| FastAPI + Python
+ORM| SQLAlchemy
+Validation| Pydantic
+Database| SQLite → PostgreSQL
+Authentication| JWT + bcrypt
+ML| scikit-learn
+NLP| TF-IDF + Logistic Regression
+Emotion Model| DistilBERT
+AI Support| Google Gemini API
+Voice| SpeechRecognition + Gemini
+TTS| pyttsx3
+
+«Twilio OTP integration is planned for a future release and is not required by the current implementation.»
+
+---
+
+🏗️ System Architecture
+
+flowchart TB
+
+    USER[Victim / User]
+
+    subgraph FRONTEND["React + TypeScript"]
+        UI[SAHAYA Interface]
+        CHECK[Well-being Check-in]
+        DASH[Role Dashboards]
+        CASE[Case Documents]
+    end
+
+    subgraph BACKEND["FastAPI Backend"]
+        AUTH[Authentication & RBAC]
+        API[REST API]
+        ML[ML Inference]
+        PRIORITY[Priority Engine]
+        SUPPORT[Support & Escalation]
+    end
+
+    subgraph AI["AI Layer"]
+        BERT[DistilBERT]
+        GEMINI[Google Gemini]
+    end
+
+    DB[(SQLite / PostgreSQL)]
+
+    USER --> UI
+    UI --> CHECK
+    UI --> DASH
+    UI --> CASE
+
+    CHECK --> API
+    CASE --> API
+    DASH --> AUTH
+
+    API --> ML
+    ML --> PRIORITY
+    ML --> BERT
+
+    API --> GEMINI
+    PRIORITY --> SUPPORT
+    AUTH --> DB
+    SUPPORT --> DB
+
+---
+
+🚀 Getting Started
+
+Prerequisites
+
+- Python 3.10+
+- Node.js + npm
+- Git
+- Gemini API key for AI features
+
+Clone
+
+git clone https://github.com/Nil-0107/SAHAYA_1.0.git
+cd SAHAYA_1.0
+
+Backend
+
 cd backend
 python -m pip install -r requirements.txt
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
 
-```bash
+Environment
+
+Create "backend/.env":
+
+GEMINI_API_KEY=your_key_here
+GEMINI_MODEL=gemini-3.8-flash
+
+Frontend
+
 cd frontend
 npm install
 npm run dev
-```
+
+Frontend API:
+
+http://127.0.0.1:8000/api/v1
+
+---
+
+🖥️ Usage
+
+Victim / User
+
+- Complete well-being check-ins
+- Use text or voice input
+- Receive AI-assisted support
+- Upload case documents
+- Request human support
+- View authorised well-being information
+
+Counsellor
+
+- View assigned users
+- Receive relevant case notifications
+- Review authorised support information
+
+Administrators
+
+- Manage administrative hierarchy
+- Manage counsellor assignments
+- Review authorised cases and support requests
+- Monitor notifications and escalations
+
+Demo credentials are available in:
+
+docs/DEMO_ACCOUNTS.md
+
+All demo data is synthetic and development-only.
+
+---
+
+🧪 Testing & Auditing
+
+SAHAYA includes development workflows for testing:
+
+- Authentication and role-based access
+- Administrative scope enforcement
+- Case creation and document uploads
+- Support-request routing
+- Notifications
+- ML predictions and confidence
+- Gemini integration
+- Voice transcription
+- Demo database seeding
+
+The ML models provide assistive signals only and are not clinical diagnostic systems.
+
+---
+
+📂 Project Structure
+
+SAHAYA_1.0/
+├── backend/
+├── frontend/
+├── docs/
+├── scripts/
+├── logistic_regression_emotion_model(1).joblib
+├── tfidf_vectorizer(1)(1).joblib
+├── SAHAYA_OPENCODE_MASTER_BUILD_SPEC.md
+├── WINDOWS_SETUP.md
+├── backend_sahaya.pdf
+├── prd_sahaya(1).pdf
+├── ui_sahaya.pdf
+├── sahaya_dynamic_distress_ui_updated.html
+├── package-lock.json
+├── .gitignore
+└── README.md
+
+---
+
+📈 Impact & Benefits
+
+👤 Social
+
+- Continuous well-being monitoring
+- Earlier visibility of changing support needs
+- Human-centred intervention
+- Accessible text and voice interaction
+
+🏛️ Institutional
+
+- Structured support workflow
+- Role-scoped case access
+- Faster support routing
+- Centralised notifications and records
+
+🤖 Responsible AI
+
+- Human-in-the-loop decision making
+- Explainable ML signals
+- No autonomous diagnosis
+- Server-side AI processing
+
+⚙️ Operational
+
+- Automated notifications
+- Case-document management
+- Administrative hierarchy
+- Confidence and trend tracking
+
+---
+
+🔮 Future Scope
+
+- Twilio OTP authentication
+- PostgreSQL production deployment
+- Multilingual Indian-language support
+- Improved domain-specific ML models
+- Longitudinal well-being analytics
+- Dedicated Android/iOS application
+- Professional counselling-service integration
+- Advanced audit and reporting
+- Production-grade encryption and security controls
+
+---
+
+📚 Research & References
+
+SAHAYA is built using established open-source and AI technologies:
+
+- scikit-learn — TF-IDF & Logistic Regression
+- Hugging Face DistilBERT — Emotion classification
+- DAIR.AI Emotion Dataset — Six-class emotion data
+- Google Gemini API — AI support and voice transcription
+- FastAPI — Backend API
+- React + TypeScript — Frontend
+- SQLAlchemy — Database ORM
+
+---
+
+🏆 Smart India Hackathon 2026
+
+Field| Details
+Project| SAHAYA
+Problem Statement| SIH26094
+Theme| MedTech / HealthTech
+Category| Software
+Team| CodeYappers
+Hackathon| Smart India Hackathon 2026
+
+---
+
+👨‍💻 Team
+
+Member| Role
+Swapnil Das| Team Lead / Backend & Architecture
+Udit Prasad| Backend
+Joy Saha| Frontend
+Debolina Ghosal| Frontend
+Anupama Modak| PPT Presenter
+Ankona Gope| Pitching & Presenting
+
+Mentor
+
+Indranil Sarkar — CSE Department
+
+---
+
+📄 License
+
+Distributed under the MIT License.
+
+See the "LICENSE" file for more information.
+
+---
+
+<p align="center">
+  <strong>SAHAYA — The AI flags. A human decides.</strong>
+  <br>
+  Built for Smart India Hackathon 2026 by Team CodeYappers
+</p>
