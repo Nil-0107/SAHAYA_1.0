@@ -1,4 +1,4 @@
-# SAATHI - Windows Setup
+# SAHAYA - Windows Setup
 
 ## Requirements
 - Windows 10/11

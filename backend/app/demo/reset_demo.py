@@ -13,18 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import ALLOWED_DEMO_ENVIRONMENTS, DemoSeedEnvironmentError, get_settings
 from app.db.database import session_scope
-from app.models import (
-    AuditLog,
-    Case,
-    CaseAssignment,
-    CaseDocument,
-    Checkin,
-    Notification,
-    Profile,
-    SupportAction,
-    SupportRequest,
-    User,
-)
+from app.models import AuditLog, Case, CaseAssignment, CaseDocument, Checkin, Notification, SupportAction, SupportRequest
 
 
 # Reverse dependency order for foreign keys.
@@ -37,16 +26,14 @@ RESET_ORDER = (
     Checkin,
     CaseDocument,
     Case,
-    Profile,
-    User,
 )
 
 
 def reset_demo(database: Session | None = None) -> dict[str, int]:
-    raw_environment = os.getenv("SAATHI_ENV", "").strip().lower()
+    raw_environment = os.getenv("SAHAYA_ENV", "").strip().lower()
     if raw_environment not in ALLOWED_DEMO_ENVIRONMENTS:
         raise DemoSeedEnvironmentError(
-            "Demo reset is blocked unless SAATHI_ENV is development, local, or test."
+            "Demo reset is blocked unless SAHAYA_ENV is development, local, or test."
         )
     settings = get_settings()
     settings.require_demo_seed_allowed()
@@ -66,7 +53,7 @@ def main() -> None:
         counts = reset_demo()
     except Exception as exc:
         raise SystemExit(f"Demo reset refused: {exc}") from exc
-    print("SAATHI synthetic demo records removed from the local database.")
+    print("SAHAYA synthetic application records removed; local test-auth accounts were preserved.")
     for table, count in counts.items():
         if count:
             print(f"{table}: {count}")

@@ -16,6 +16,16 @@ class SignupRequest(BaseModel):
     password: str = Field(min_length=8, max_length=256)
     date_of_birth: date = Field()
     role: Role = Role.VICTIM
+    state_name: str | None = Field(default=None, max_length=160)
+    district_name: str | None = Field(default=None, max_length=160)
+
+    @field_validator("state_name", "district_name")
+    @classmethod
+    def normalize_place(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        return normalized or None
 
     @field_validator("phone")
     @classmethod

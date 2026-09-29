@@ -23,15 +23,15 @@ export function SafetyModal({ open, onClose }: { open: boolean; onClose: () => v
             <Button variant="danger" onClick={() => setView("help")}>Yes, show immediate help</Button>
             <Button variant="secondary" onClick={onClose}>No, continue support</Button>
           </div>
-          <button type="button" onClick={onClose} className="mt-5 w-full rounded-xl px-3 py-2 text-xs font-extrabold text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-saathi-500">Close and return to SAATHI</button>
+          <button type="button" onClick={onClose} className="mt-5 w-full rounded-xl px-3 py-2 text-xs font-extrabold text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sahaya-500">Close and return to SAHAYA</button>
         </div>
       ) : (
         <div>
-          <button type="button" onClick={() => setView("question")} className="mb-4 inline-flex items-center gap-2 rounded-lg px-2 py-1 text-xs font-extrabold text-saathi-700 focus:outline-none focus:ring-2 focus:ring-saathi-500"><ArrowLeft size={15} /> Back</button>
+          <button type="button" onClick={() => setView("question")} className="mb-4 inline-flex items-center gap-2 rounded-lg px-2 py-1 text-xs font-extrabold text-sahaya-700 focus:outline-none focus:ring-2 focus:ring-sahaya-500"><ArrowLeft size={15} /> Back</button>
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-red-50 text-red-700"><ShieldAlert size={23} /></span>
           <h2 className="mt-5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-red-700">Immediate help</h2>
           <p className="mt-2 text-2xl font-extrabold text-slate-900">If you are in immediate danger, use a trusted local emergency resource.</p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">SAATHI has not contacted emergency services, authorities, police, counsellors, or any other person. Your location has not been shared.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-600">SAHAYA has not contacted emergency services, authorities, police, counsellors, or any other person. Your location has not been shared.</p>
           {immediateHelpResources.length > 0 ? (
             <div className="mt-5 grid gap-3">
               {immediateHelpResources.map((resource) => (

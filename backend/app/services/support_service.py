@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.audit_log import AuditLog
 from app.models.case import Case
-from app.models.case_assignment import CaseAssignment
+from app.models.case_assignment import AssignmentStatus, AssignmentType, CaseAssignment
 from app.models.support_request import SupportRequest, SupportRequestStatus, SupportRequestType
 from app.models.user import Role, User
 from app.models.notification import Notification
@@ -30,14 +30,15 @@ class SupportService:
         SupportCategory.PROTECTION_RELOCATION: SupportRequestType.PROTECTION,
     }
 
-    def __init__(self, database: Session) -> None:
+    def __init__(self, database: Session, *, include_demo: bool = True) -> None:
         self.database = database
+        self.include_demo = include_demo
 
     def create(self, *, user: User, case_id: int, category: SupportCategory, details: str) -> SupportRequest:
         if user.role != Role.VICTIM:
             raise SupportServiceError(403, "SUPPORT_REQUEST_FORBIDDEN", "Only Victim / User accounts can create support requests")
         case = self.database.scalar(
-            select(Case).where(Case.id == case_id, Case.owner_user_id == user.id)
+            select(Case).where(Case.id == case_id, Case.owner_user_id == user.id, *(() if self.include_demo else (Case.is_demo.is_(False),)))
         )
         if case is None:
             raise SupportServiceError(404, "CASE_NOT_FOUND", "Case not found")
@@ -77,8 +78,36 @@ class SupportService:
                     metadata_json={"category": category.value, "case_id": str(case.id)},
                 )
             )
+            # Legal help belongs in the district coordination queue immediately.
+            # The assignment is real workflow state, not a presentation-only
+            # notification, and gives the district administrator access to the
+            # existing support-action endpoint.
+            if request_type == SupportRequestType.LEGAL and user.district_id is not None:
+                district_admins = list(self.database.scalars(
+                    select(User).where(
+                        User.role == Role.DISTRICT_ADMIN,
+                        User.district_id == user.district_id,
+                    )
+                ))
+                for district_admin in district_admins:
+                    self.database.add(CaseAssignment(
+                        case_id=case.id,
+                        support_request_id=request.id,
+                        assignee_user_id=district_admin.id,
+                        assigned_by_user_id=district_admin.id,
+                        assignment_type=AssignmentType.DISTRICT_COORDINATION,
+                        status=AssignmentStatus.ACTIVE,
+                        reason="Automatic district routing for a legal-help request.",
+                        active=True,
+                    ))
+                if district_admins:
+                    request.status = SupportRequestStatus.ASSIGNED
+
             # Notify the authorised administrative hierarchy immediately. Counsellors receive it after assignment.
-            recipients = list(self.database.scalars(select(User).where(User.id != user.id)))
+            recipient_query = select(User).where(User.id != user.id)
+            if request_type != SupportRequestType.LEGAL:
+                recipient_query = recipient_query.where(User.is_demo.is_(False))
+            recipients = list(self.database.scalars(recipient_query))
             for recipient in recipients:
                 in_scope = (
                     recipient.role == Role.NATIONAL_ADMIN
@@ -97,6 +126,8 @@ class SupportService:
 
     def list_for_user(self, *, user: User) -> list[SupportRequest]:
         query = select(SupportRequest)
+        if not self.include_demo:
+            query = query.where(SupportRequest.is_demo.is_(False))
         if user.role == Role.VICTIM:
             query = query.where(SupportRequest.user_id == user.id)
         elif user.role in {Role.COUNSELLOR, Role.DISTRICT_ADMIN}:
@@ -119,12 +150,13 @@ class SupportService:
         return list(self.database.scalars(query.order_by(SupportRequest.created_at.desc(), SupportRequest.id.desc())))
 
     def get_for_user(self, *, user: User, request_id: int) -> SupportRequest:
-        request = self.database.scalar(
-            select(SupportRequest).where(
-                SupportRequest.id == request_id,
-                *self._access_conditions(user),
-            )
+        query = select(SupportRequest).where(
+            SupportRequest.id == request_id,
+            *self._access_conditions(user),
         )
+        if not self.include_demo:
+            query = query.where(SupportRequest.is_demo.is_(False))
+        request = self.database.scalar(query)
         if request is None:
             raise SupportServiceError(404, "SUPPORT_REQUEST_NOT_FOUND", "Support request not found")
         return request

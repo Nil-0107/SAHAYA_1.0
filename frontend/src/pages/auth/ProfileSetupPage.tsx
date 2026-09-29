@@ -5,7 +5,7 @@ import { Button } from "../../components/common/Button";
 import { Card } from "../../components/common/Card";
 import { ErrorState, InlineAlert, LoadingState } from "../../components/feedback/FeedbackStates";
 import { FormField, SelectInput, TextArea, TextInput } from "../../components/forms/FormField";
-import { postAuthenticationPath } from "../../config/demoAuth";
+import { postAuthenticationPath } from "../../config/authRouting";
 import { useAuth } from "../../context/AuthContext";
 import { profileApi } from "../../services/profileApi";
 import type { ProfileSetupPayload } from "../../types/profile";
@@ -120,22 +120,22 @@ export function ProfileSetupPage() {
       <AuthProgress current={2} />
       <Card className="mt-5 p-6 sm:p-8">
         <div className="text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-saathi-50 text-saathi-700"><CheckCircle2 size={23} /></span>
-          <p className="mt-4 text-[11px] font-extrabold uppercase tracking-[.16em] text-saathi-700">One-time setup</p>
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-sahaya-50 text-sahaya-700"><CheckCircle2 size={23} /></span>
+          <p className="mt-4 text-[11px] font-extrabold uppercase tracking-[.16em] text-sahaya-700">One-time setup</p>
           <h1 className="mt-2 text-3xl font-extrabold text-slate-900">Finish your profile</h1>
           <p className="mt-2 text-sm leading-6 text-slate-500">This setup is completed once. Your account mobile was provided during registration and is not an emergency contact.</p>
         </div>
 
         <div className="mt-5 flex items-start gap-3 rounded-2xl border border-teal-200 bg-teal-50 p-4">
           <ShieldCheck className="mt-0.5 shrink-0 text-emerald-700" size={19} />
-          <div><p className="text-xs font-extrabold uppercase tracking-wider text-saathi-800">Account mobile · Registered</p><p className="mt-1 text-sm font-bold text-saathi-950">{user.phone}</p><p className="mt-1 text-[11px] text-saathi-900">This is your own account number and is not an emergency contact.</p></div>
+          <div><p className="text-xs font-extrabold uppercase tracking-wider text-sahaya-800">Account mobile · Registered</p><p className="mt-1 text-sm font-bold text-sahaya-950">{user.phone}</p><p className="mt-1 text-[11px] text-sahaya-900">This is your own account number and is not an emergency contact.</p></div>
         </div>
 
         {loadError ? <div className="mt-5"><ErrorState message={loadError} onRetry={() => window.location.reload()} /></div> : null}
 
         <form className="mt-6 grid gap-5" onSubmit={submitProfile}>
           <fieldset>
-            <legend className="flex items-center gap-2 text-sm font-extrabold text-slate-900"><ContactRound size={17} className="text-saathi-700" /> Basic profile</legend>
+            <legend className="flex items-center gap-2 text-sm font-extrabold text-slate-900"><ContactRound size={17} className="text-sahaya-700" /> Basic profile</legend>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               <FormField label="Full name"><TextInput required autoComplete="name" maxLength={120} value={form.full_name} onChange={(event) => updateField("full_name", event.target.value)} /></FormField>
               <FormField label="Display name"><TextInput required autoComplete="nickname" maxLength={80} value={form.display_name} onChange={(event) => updateField("display_name", event.target.value)} /></FormField>
@@ -176,7 +176,7 @@ export function ProfileSetupPage() {
           </details>
 
           <label className="flex items-start gap-2 text-xs leading-5 text-slate-700">
-            <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1 h-4 w-4 accent-saathi-700" />
+            <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1 h-4 w-4 accent-sahaya-700" />
             I consent to this one-time profile setup and confirm that the emergency contact is optional and separate from my account mobile.
           </label>
           {error ? <InlineAlert>{error}</InlineAlert> : null}
@@ -186,4 +186,3 @@ export function ProfileSetupPage() {
     </section>
   );
 }
-

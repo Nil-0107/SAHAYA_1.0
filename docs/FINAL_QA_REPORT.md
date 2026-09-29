@@ -1,4 +1,4 @@
-# SAATHI Final QA Report
+# SAHAYA Final QA Report
 
 ## Test commands
 
@@ -6,9 +6,9 @@
 
 ```bash
 cd backend
-SAATHI_ENV=test \
-SAATHI_DATABASE_URL='sqlite:///:memory:' \
-SAATHI_OTP_SECRET_ENCRYPTION_KEY='test-encryption-key' \
+SAHAYA_ENV=test \
+SAHAYA_DATABASE_URL='sqlite:///:memory:' \
+SAHAYA_OTP_SECRET_ENCRYPTION_KEY='test-encryption-key' \
 python3 -m pytest -q
 ```
 

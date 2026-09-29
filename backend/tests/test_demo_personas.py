@@ -33,8 +33,8 @@ from app.demo.seed_demo import DemoSeedConflictError, seed_demo
 
 @pytest.fixture
 def database(monkeypatch: pytest.MonkeyPatch) -> Session:
-    monkeypatch.setenv("SAATHI_ENV", "test")
-    monkeypatch.setenv("SAATHI_DATABASE_URL", "sqlite:///:memory:")
+    monkeypatch.setenv("SAHAYA_ENV", "test")
+    monkeypatch.setenv("SAHAYA_DATABASE_URL", "sqlite:///:memory:")
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -169,22 +169,22 @@ def test_every_demo_persona_authenticates_through_normal_login(database: Session
 
 
 def test_seed_requires_explicit_environment(database: Session, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("SAATHI_ENV", raising=False)
+    monkeypatch.delenv("SAHAYA_ENV", raising=False)
     with pytest.raises(DemoSeedEnvironmentError, match="blocked"):
         seed_demo(database)
     assert database.scalar(select(User)) is None
 
 
 def test_seed_refuses_production_environment(database: Session, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SAATHI_ENV", "production")
+    monkeypatch.setenv("SAHAYA_ENV", "production")
     with pytest.raises(DemoSeedEnvironmentError, match="blocked"):
         seed_demo(database)
     assert database.scalar(select(User)) is None
 
 
 def test_seed_refuses_production_looking_url(database: Session, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SAATHI_ENV", "development")
-    monkeypatch.setenv("SAATHI_DATABASE_URL", "sqlite:///saathi_production.db")
+    monkeypatch.setenv("SAHAYA_ENV", "development")
+    monkeypatch.setenv("SAHAYA_DATABASE_URL", "sqlite:///sahaya_production.db")
     with pytest.raises(DemoSeedEnvironmentError, match="production-looking"):
         seed_demo(database)
     assert database.scalar(select(User)) is None

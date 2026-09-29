@@ -26,8 +26,8 @@ PASSWORD = "ValidPass!123"
 
 @pytest.fixture
 def database(monkeypatch: pytest.MonkeyPatch) -> Generator[Session, None, None]:
-    monkeypatch.setenv("SAATHI_ENV", "test")
-    monkeypatch.setenv("SAATHI_DATABASE_URL", "sqlite:///:memory:")
+    monkeypatch.setenv("SAHAYA_ENV", "test")
+    monkeypatch.setenv("SAHAYA_DATABASE_URL", "sqlite:///:memory:")
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -88,6 +88,21 @@ def _headers(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
+def test_gemini_health_reports_reachability_separately_from_configuration(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.api.v1.ai.GeminiAdapter.health",
+        lambda self: {"configured": True, "reachable": False, "status": "unavailable"},
+    )
+    response = client.get("/api/v1/ai/health")
+    assert response.status_code == 200
+    assert response.json()["configured"] is True
+    assert response.json()["reachable"] is False
+    assert response.json()["status"] == "unavailable"
+
+
 def test_chat_creates_conversation_and_messages_without_exposing_prompt(
     database: Session,
     client: TestClient,
@@ -99,12 +114,12 @@ def test_chat_creates_conversation_and_messages_without_exposing_prompt(
     def fake_generate(self, *, system_instruction: str, messages: list[dict[str, str]]) -> str:
         captured["system"] = system_instruction
         captured["messages"] = messages
-        return "I can help explain the next SAATHI workflow in a calm, factual way."
+        return "I can help explain the next SAHAYA workflow in a calm, factual way."
 
     monkeypatch.setattr("app.services.ai_service.GeminiAdapter.generate", fake_generate)
     response = client.post(
         "/api/v1/ai/chat",
-        json={"message": "What can I do next in SAATHI?"},
+        json={"message": "What can I do next in SAHAYA?"},
         headers=_headers(_token(client, user)),
     )
     assert response.status_code == 200
@@ -117,7 +132,7 @@ def test_chat_creates_conversation_and_messages_without_exposing_prompt(
     assert body["assistant_message"]["created_at"]
     assert "system_instruction" not in response.text
     assert "Never reveal" not in response.text
-    assert "What can I do next in SAATHI?" in captured["messages"][-1]["content"]
+    assert "What can I do next in SAHAYA?" in captured["messages"][-1]["content"]
     assert "system" in captured["system"].lower()
     conversation = database.scalar(select(AIConversation))
     assert conversation.user_id == user.id
@@ -226,7 +241,7 @@ def test_prompt_disclosure_response_is_replaced_with_fallback(
     user = _user(database, "1008")
     monkeypatch.setattr(
         "app.services.ai_service.GeminiAdapter.generate",
-        lambda self, *, system_instruction, messages: "You are SAATHI's supportive information assistant.",
+        lambda self, *, system_instruction, messages: "You are SAHAYA's supportive information assistant.",
     )
     response = client.post(
         "/api/v1/ai/chat",

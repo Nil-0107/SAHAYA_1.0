@@ -1,12 +1,17 @@
 import { api } from "./api";
-import type { AdminDashboard, AdminUserDetail } from "../types/admin";
+import type { AdminDashboard, AdminPriorityQueueItem, AdminUserDetail } from "../types/admin";
 import type { AdministrativeAccount, AdministrativeUnit } from "../types/administration";
 
 export const adminApi = {
-  async users(includeDemo = false): Promise<AdminUserDetail[]> { const { data } = await api.get<AdminUserDetail[]>("/admin/users", { params: { include_demo: includeDemo } }); return data; },
+  async users(): Promise<AdminUserDetail[]> { const { data } = await api.get<AdminUserDetail[]>("/admin/users"); return data; },
 
-  async dashboard(includeDemo = false): Promise<AdminDashboard> {
-    const { data } = await api.get<AdminDashboard>("/admin/dashboard", { params: { include_demo: includeDemo } });
+  async dashboard(): Promise<AdminDashboard> {
+    const { data } = await api.get<AdminDashboard>("/admin/dashboard");
+    return data;
+  },
+
+  async casePriority(caseId: number): Promise<AdminPriorityQueueItem> {
+    const { data } = await api.get<AdminPriorityQueueItem>(`/admin/cases/${caseId}`);
     return data;
   },
 

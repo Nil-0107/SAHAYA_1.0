@@ -1,6 +1,6 @@
 import { AxiosError, type AxiosAdapter, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api, authRefreshClient, setAccessToken, setAuthSessionListener, type AuthSessionListener } from "./api";
+import { api, authRefreshClient, clearAuthSession, setAccessToken, setAuthSessionListener, type AuthSessionListener } from "./api";
 import type { AuthSession } from "./authApi";
 
 const originalApiAdapter = api.defaults.adapter;
@@ -44,7 +44,7 @@ beforeEach(() => {
 afterEach(() => {
   api.defaults.adapter = originalApiAdapter;
   authRefreshClient.defaults.adapter = originalRefreshAdapter;
-  setAccessToken(null);
+  clearAuthSession();
   setAuthSessionListener(null);
 });
 
@@ -80,5 +80,20 @@ describe("API session recovery", () => {
 
     await expect(api.get("/me")).rejects.toBeInstanceOf(AxiosError);
     expect(listener.onSessionExpired).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not refresh a request after the session was explicitly cleared", async () => {
+    let refreshAttempts = 0;
+    api.defaults.adapter = vi.fn(async (config) => { throw unauthorized(config); });
+    authRefreshClient.defaults.adapter = vi.fn(async () => {
+      refreshAttempts += 1;
+      return axiosResponse({} as InternalAxiosRequestConfig, refreshedSession);
+    });
+
+    const request = api.get("/me");
+    await Promise.resolve();
+    clearAuthSession();
+    await expect(request).rejects.toBeInstanceOf(AxiosError);
+    expect(refreshAttempts).toBe(0);
   });
 });

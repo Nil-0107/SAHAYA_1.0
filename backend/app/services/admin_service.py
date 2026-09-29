@@ -34,11 +34,13 @@ _ESCALATED_PRIORITIES = {"high", "urgent", "critical", "elevated"}
 
 
 class AdminDashboardService:
-    def __init__(self, database: Session) -> None:
+    def __init__(self, database: Session, *, allow_demo: bool = True) -> None:
         self.database = database
         self.priority_service = PriorityService()
+        self.allow_demo = allow_demo
 
     def user_directory(self, *, user: User, include_demo: bool = False) -> list[dict[str, Any]]:
+        include_demo = include_demo and self.allow_demo
         scope = [User.role == Role.VICTIM]
         if user.role == Role.STATE_ADMIN:
             scope.append(User.state_id == user.state_id)
@@ -52,9 +54,17 @@ class AdminDashboardService:
         rows = self.database.scalars(user_query.order_by(User.created_at.desc(), User.id.desc())).all()
         result = []
         for account in rows:
-            cases = list(self.database.scalars(select(Case).where(Case.owner_user_id == account.id)))
-            supports = list(self.database.scalars(select(SupportRequest).where(SupportRequest.user_id == account.id)))
-            last_checkin = self.database.scalar(select(Checkin.created_at).where(Checkin.user_id == account.id).order_by(Checkin.created_at.desc()).limit(1))
+            case_scope = [Case.owner_user_id == account.id]
+            support_scope = [SupportRequest.user_id == account.id]
+            if not include_demo:
+                case_scope.append(Case.is_demo.is_(False))
+                support_scope.append(SupportRequest.is_demo.is_(False))
+            cases = list(self.database.scalars(select(Case).where(*case_scope)))
+            supports = list(self.database.scalars(select(SupportRequest).where(*support_scope)))
+            checkin_query = select(Checkin.created_at).where(Checkin.user_id == account.id)
+            if not include_demo:
+                checkin_query = checkin_query.where(Checkin.is_demo.is_(False))
+            last_checkin = self.database.scalar(checkin_query.order_by(Checkin.created_at.desc()).limit(1))
             result.append({
                 "id": account.id,
                 "full_name": account.profile.full_name,
@@ -77,6 +87,7 @@ class AdminDashboardService:
         return result
 
     def dashboard(self, *, user: User, include_demo: bool = False) -> dict[str, Any]:
+        include_demo = include_demo and self.allow_demo
         scope_conditions = []
         if user.role == Role.STATE_ADMIN:
             scope_conditions.append(User.state_id == user.state_id)
@@ -94,7 +105,7 @@ class AdminDashboardService:
             )
             .join(User, User.id == Case.owner_user_id)
             .join(Profile, Profile.user_id == User.id)
-            .where(*scope_conditions)
+            .where(*scope_conditions, *( [Case.is_demo.is_(False)] if not include_demo else [] ))
         ).all()
         priority_case_rows = self.database.execute(
             select(
@@ -109,7 +120,7 @@ class AdminDashboardService:
             )
             .join(User, User.id == Case.owner_user_id)
             .join(Profile, Profile.user_id == User.id)
-            .where(*scope_conditions)
+            .where(*scope_conditions, *( [Case.is_demo.is_(False)] if not include_demo else [] ))
         ).all()
         case_ids = [row.case_id for row in case_rows]
         explicit_support_case_ids = set(
@@ -117,6 +128,7 @@ class AdminDashboardService:
                 select(SupportRequest.case_id).where(
                     SupportRequest.explicit_human_request.is_(True),
                     SupportRequest.case_id.in_(case_ids),
+                    *( [SupportRequest.is_demo.is_(False)] if not include_demo else [] ),
                 )
             )
         ) if case_ids else set()
@@ -134,7 +146,7 @@ class AdminDashboardService:
             .join(Case, Case.id == SupportRequest.case_id)
             .join(User, User.id == Case.owner_user_id)
             .join(Profile, Profile.user_id == User.id)
-            .where(*scope_conditions)
+            .where(*scope_conditions, *( [SupportRequest.is_demo.is_(False)] if not include_demo else [] ))
         ).all()
         assignment_rows = self.database.execute(
             select(
@@ -144,7 +156,7 @@ class AdminDashboardService:
             .join(Case, Case.id == CaseAssignment.case_id)
             .join(User, User.id == Case.owner_user_id)
             .join(Profile, Profile.user_id == User.id)
-            .where(CaseAssignment.active.is_(True), *scope_conditions)
+            .where(CaseAssignment.active.is_(True), *scope_conditions, *( [CaseAssignment.is_demo.is_(False)] if not include_demo else [] ))
         ).all()
 
         notifications = list(
@@ -173,7 +185,8 @@ class AdminDashboardService:
                         AuditLog.actor_user_id == user.id,
                         AuditLog.resource_id.in_([row.case_number for row in case_rows]),
                         AuditLog.resource_id.in_([str(item) for item in set(managed_user_ids)]),
-                    )
+                    ),
+                    *( [AuditLog.is_demo.is_(False)] if not include_demo else [] ),
                 )
                 .order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
                 .limit(200)
@@ -182,7 +195,7 @@ class AdminDashboardService:
         total_checkins = self.database.scalar(
             select(func.count(Checkin.id))
             .join(User, User.id == Checkin.user_id)
-            .where(*scope_conditions)
+            .where(*scope_conditions, *( [Checkin.is_demo.is_(False)] if not include_demo else [] ))
         ) or 0
         total_users = self.database.scalar(
             select(func.count(User.id)).where(*scope_conditions)

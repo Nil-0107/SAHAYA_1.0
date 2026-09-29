@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   login: vi.fn(),
   logout: vi.fn(),
   setAccessToken: vi.fn(),
+  clearAuthSession: vi.fn(),
   setAuthSessionListener: vi.fn(),
 }));
 
@@ -24,6 +25,7 @@ vi.mock("../services/authApi", () => ({
 
 vi.mock("../services/api", () => ({
   setAccessToken: mocks.setAccessToken,
+  clearAuthSession: mocks.clearAuthSession,
   setAuthSessionListener: mocks.setAuthSessionListener,
 }));
 
@@ -70,6 +72,7 @@ function Probe() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.clear();
   mocks.refresh.mockRejectedValue(unauthorized());
   mocks.logout.mockResolvedValue(undefined);
   mocks.setAuthSessionListener.mockImplementation(() => undefined);
@@ -77,10 +80,12 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  window.localStorage.clear();
 });
 
 describe("AuthContext", () => {
   it("restores a session from the HttpOnly refresh cookie on startup", async () => {
+    window.localStorage.setItem("sahaya_session_present", "1");
     mocks.refresh.mockResolvedValue(session);
     render(<AuthProvider><Probe /></AuthProvider>);
 
@@ -91,6 +96,7 @@ describe("AuthContext", () => {
   });
 
   it("clears an expired session and exposes the expired state", async () => {
+    window.localStorage.setItem("sahaya_session_present", "1");
     let listener: { onSessionExpired?: () => void } | undefined;
     mocks.setAuthSessionListener.mockImplementation((next: typeof listener) => { listener = next; });
     mocks.refresh.mockResolvedValue(session);
@@ -100,7 +106,7 @@ describe("AuthContext", () => {
     act(() => listener?.onSessionExpired?.());
     await waitFor(() => expect(screen.getByTestId("user")).toHaveTextContent("anonymous"));
     expect(screen.getByTestId("expired")).toHaveTextContent("true");
-    expect(mocks.setAccessToken).toHaveBeenLastCalledWith(null);
+    expect(mocks.clearAuthSession).toHaveBeenCalled();
   });
 
   it("logs in through the real auth client contract and stores no password in state", async () => {
@@ -114,6 +120,7 @@ describe("AuthContext", () => {
   });
 
   it("clears local authentication state on logout", async () => {
+    window.localStorage.setItem("sahaya_session_present", "1");
     mocks.refresh.mockResolvedValue(session);
     render(<AuthProvider><Probe /></AuthProvider>);
     await waitFor(() => expect(screen.getByTestId("user")).toHaveTextContent("victim"));
@@ -121,6 +128,6 @@ describe("AuthContext", () => {
     await userEvent.click(screen.getByRole("button", { name: "logout" }));
     await waitFor(() => expect(screen.getByTestId("user")).toHaveTextContent("anonymous"));
     expect(mocks.logout).toHaveBeenCalledTimes(1);
-    expect(mocks.setAccessToken).toHaveBeenLastCalledWith(null);
+    expect(mocks.clearAuthSession).toHaveBeenCalled();
   });
 });

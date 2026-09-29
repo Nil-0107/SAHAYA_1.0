@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import require_roles
+from app.core.config import Settings, get_settings
 from app.db.database import get_db
 from app.models.user import Role, User
 from app.schemas.district import (
@@ -32,8 +33,9 @@ _CATEGORY_BY_TYPE = {
 def district_dashboard(
     user: User = Depends(require_roles(Role.DISTRICT_ADMIN)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> DistrictDashboardResponse:
-    data = DistrictDashboardService(database).dashboard(user=user)
+    data = DistrictDashboardService(database, include_demo=settings.demo_data_enabled).dashboard(user=user)
     notifications = [NotificationResponse.model_validate(item) for item in data["notifications"]]
     return DistrictDashboardResponse(
         cases=[DistrictCaseSummary.model_validate(item) for item in data["cases"]],

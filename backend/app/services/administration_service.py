@@ -95,7 +95,7 @@ class AdministrationService:
         )
 
     def list_accounts(self, *, actor: User, role: Role) -> list[User]:
-        query = select(User).where(User.role == role)
+        query = select(User).where(User.role == role, User.is_demo.is_(False))
         if role == Role.STATE_ADMIN:
             self._require_role(actor, Role.NATIONAL_ADMIN)
         elif role == Role.DISTRICT_ADMIN:

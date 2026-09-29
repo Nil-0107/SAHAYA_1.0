@@ -22,6 +22,13 @@ class CheckinCreateRequest(BaseModel):
         return normalized
 
 
+class EmotionClassificationResponse(BaseModel):
+    label: str
+    confidence: float
+    probabilities: dict[str, float]
+    model_version: str
+
+
 class CheckinResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -34,3 +41,4 @@ class CheckinResponse(BaseModel):
     model_version: str | None
     analysis_status: CheckinAnalysisStatus
     created_at: datetime
+    emotion: EmotionClassificationResponse | None = None

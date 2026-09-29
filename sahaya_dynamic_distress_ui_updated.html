@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAATHI — Victim Well-being Support</title>
+<title>SAHAYA — Victim Well-being Support</title>
 <style>
 :root{--bg:#f5f7f8;--white:#fff;--ink:#17232b;--muted:#66757e;--line:#dfe7ea;--nav:#123f4c;--teal:#2d8d87;--green:#3f8c65;--amber:#b27b27;--red:#b64a49;--shadow:0 12px 35px rgba(20,45,55,.08);--r:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
@@ -62,7 +62,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 <!-- SINGLE LANDING / LOGIN -->
 <section id="landing" class="landing">
   <div class="landing-left">
-    <div class="brand"><div class="brandmark">S</div>SAATHI</div>
+    <div class="brand"><div class="brandmark">S</div>SAHAYA</div>
     <div class="eyebrow" style="margin-top:65px">Victim well-being monitoring & support</div>
     <h1>A quiet support layer through the case journey.</h1>
     <p>Periodic check-ins, longitudinal well-being monitoring, early distress-risk identification and connection to human support — designed to work alongside the investigation, trial, rehabilitation and compensation process.</p>
@@ -73,7 +73,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
   <div class="login-side">
     <div class="login">
       <div class="eyebrow">Secure access</div>
-      <h2 id="authTitle">Welcome to SAATHI</h2>
+      <h2 id="authTitle">Welcome to SAHAYA</h2>
       <p id="authSubtitle">Choose your role first. You can sign in to an existing account or create a new one.</p>
 
       <div class="auth-tabs">
@@ -139,7 +139,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
         <div class="auth-steps"><div class="auth-step-dot active">1</div><div class="auth-step-line active"></div><div class="auth-step-dot active">2</div><div class="auth-step-line active"></div><div class="auth-step-dot active">3</div></div>
         <div class="eyebrow">Step 4 · Account setup</div>
         <h3 style="margin:7px 0">Finish your profile</h3>
-        <p class="muted">Your account is verified. Complete the basic profile before entering SAATHI.</p>
+        <p class="muted">Your account is verified. Complete the basic profile before entering SAHAYA.</p>
         <div class="profile-grid">
           <div class="field"><label>Preferred language</label><select id="profileLanguage"><option>English</option><option>Hindi</option><option>Bengali</option><option>Odia</option><option>Marathi</option></select></div>
           <div class="field"><label>City / district</label><input id="profileLocation" placeholder="Enter city or district"></div>
@@ -159,18 +159,18 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 <!-- APP -->
 <section id="app" class="app">
   <aside class="sidebar">
-    <div class="sidebrand"><div class="brandmark">S</div><div>SAATHI<small>WELL-BEING SUPPORT</small></div></div>
+    <div class="sidebrand"><div class="brandmark">S</div><div>SAHAYA<small>WELL-BEING SUPPORT</small></div></div>
     <nav id="nav" class="nav"></nav>
   </aside>
   <main class="main">
-    <header class="topbar"><div id="topTitle">SAATHI</div><div class="user"><button id="notifBell" class="btn secondary small hidden" onclick="toggleNotifications()">🔔 <span id="notifCount" class="badge-count">0</span></button><span id="roleName"></span><div class="avatar">S</div><button class="btn secondary small" onclick="logout()">Sign out</button></div></header>
+    <header class="topbar"><div id="topTitle">SAHAYA</div><div class="user"><button id="notifBell" class="btn secondary small hidden" onclick="toggleNotifications()">🔔 <span id="notifCount" class="badge-count">0</span></button><span id="roleName"></span><div class="avatar">S</div><button class="btn secondary small" onclick="logout()">Sign out</button></div></header>
     <div id="notificationPanel" class="notif-panel hidden"></div>
     <div class="content">
 
       <!-- VICTIM HOME -->
       <section id="victim-home" class="page">
         <div class="hero">
-          <div><div class="eyebrow">Welcome</div><h1>You don't have to go through it alone.</h1><p>Your SAATHI space keeps your case journey, well-being check-ins and support options together. You can choose how you communicate and ask for human help at any time.</p>
+          <div><div class="eyebrow">Welcome</div><h1>You don't have to go through it alone.</h1><p>Your SAHAYA space keeps your case journey, well-being check-ins and support options together. You can choose how you communicate and ask for human help at any time.</p>
             <div class="actions"><button class="btn primary" onclick="showPage('victim-test')">Start today's well-being check</button><button class="btn secondary" onclick="showPage('victim-support')">Get human support</button><button class="btn danger" onclick="safety()">I'm not safe</button></div>
           </div>
           <div class="card" style="box-shadow:none"><div class="label">Current well-being</div><div class="ring"><div><strong>68</strong><small>distress / 100</small></div></div><div style="text-align:center;margin-top:8px"><span class="pill elevated">Elevated</span></div><div class="forecast"><span style="font-size:22px">↗</span><div><b>Trajectory increasing</b><span class="muted">7-day forecast: 76</span></div></div></div>
@@ -206,7 +206,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
       <section id="victim-ai" class="page">
         <div class="head"><div><div class="eyebrow">Gemini-powered support</div><h1>AI support</h1><p>A conversational interface for check-ins and support. The backend can connect this screen to Gemini and your safety/routing layer.</p></div><span class="pill stable">AI assistant</span></div>
         <div class="card" style="min-height:430px;display:flex;flex-direction:column">
-          <div style="background:#f4f8f8;border-radius:13px;padding:14px;max-width:75%"><b>SAATHI AI</b><p class="muted" style="margin:5px 0 0">I'm here to listen. You can tell me what has been difficult recently, what you are worried about, or what kind of support you need.</p></div>
+          <div style="background:#f4f8f8;border-radius:13px;padding:14px;max-width:75%"><b>SAHAYA AI</b><p class="muted" style="margin:5px 0 0">I'm here to listen. You can tell me what has been difficult recently, what you are worried about, or what kind of support you need.</p></div>
           <div id="chatMessages" style="display:grid;gap:10px;margin-top:15px;flex:1"></div>
           <div style="display:flex;gap:8px;margin-top:20px"><input id="chatInput" style="flex:1;border:1px solid var(--line);border-radius:11px;padding:12px" placeholder="Type your response..."><button class="btn primary" onclick="sendChat()">Send</button><button class="btn secondary" onclick="toast('Voice chat placeholder — Gemini Live/voice backend later')">🎙</button></div>
           <p class="muted" style="font-size:11px;margin-bottom:0">AI responses should be constrained by your backend safety policy and escalation rules. It should not replace a counsellor, doctor, lawyer, police officer, or emergency service.</p>
@@ -500,7 +500,7 @@ function sendChat(){
  setTimeout(()=>{
    const a=document.createElement('div');
    a.style.cssText='background:#f4f8f8;border-radius:13px;padding:11px 13px;max-width:75%;font-size:13px';
-   a.innerHTML='<b>SAATHI AI</b><div style="margin-top:4px;color:#66757e">Thank you for sharing that. In the connected backend, Gemini will respond using the approved support policy and can route the conversation to human assistance when required.</div>';
+   a.innerHTML='<b>SAHAYA AI</b><div style="margin-top:4px;color:#66757e">Thank you for sharing that. In the connected backend, Gemini will respond using the approved support policy and can route the conversation to human assistance when required.</div>';
    box.appendChild(a);
  },350);
 }
@@ -604,7 +604,7 @@ function resetCase(){
 function setAuthMode(mode){
   document.getElementById('loginTab').classList.toggle('active',mode==='login');
   document.getElementById('signupTab').classList.toggle('active',mode==='signup');
-  document.getElementById('authTitle').textContent=mode==='login'?'Welcome back to SAATHI':'Create your SAATHI account';
+  document.getElementById('authTitle').textContent=mode==='login'?'Welcome back to SAHAYA':'Create your SAHAYA account';
   document.getElementById('authSubtitle').textContent=mode==='login'?'Choose your role and sign in to your secure workspace.':'Choose your role, create your password, verify your OTP, then finish account setup.';
   clearAuthErrors();
   if(!selectedRole){
@@ -709,7 +709,7 @@ function finishSignup(){
     err.style.display='block';return;
   }
   err.style.display='none';
-  localStorage.setItem('saathiDemoUser',JSON.stringify({
+  localStorage.setItem('sahayaDemoUser',JSON.stringify({
     name:signupDraft.name,phone:signupDraft.phone,email:signupDraft.email,role:signupDraft.role,
     language:document.getElementById('profileLanguage').value,location
   }));

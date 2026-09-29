@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_ready_user, require_roles
+from app.core.config import Settings, get_settings
 from app.db.database import get_db
 from app.models.case_assignment import CaseAssignment
 from app.models.support_action import SupportAction
@@ -37,21 +38,14 @@ def _raise_service_error(error: SupportServiceError) -> None:
     ) from error
 
 
-def _response(request: SupportRequest, database: Session) -> SupportRequestResponse:
-    assignments = list(
-        database.scalars(
-            select(CaseAssignment)
-            .where(CaseAssignment.support_request_id == request.id)
-            .order_by(CaseAssignment.assigned_at.desc(), CaseAssignment.id.desc())
-        )
-    )
-    updates = list(
-        database.scalars(
-            select(SupportAction)
-            .where(SupportAction.support_request_id == request.id)
-            .order_by(SupportAction.created_at.asc(), SupportAction.id.asc())
-        )
-    )
+def _response(request: SupportRequest, database: Session, *, include_demo: bool) -> SupportRequestResponse:
+    assignment_query = select(CaseAssignment).where(CaseAssignment.support_request_id == request.id)
+    update_query = select(SupportAction).where(SupportAction.support_request_id == request.id)
+    if not include_demo:
+        assignment_query = assignment_query.where(CaseAssignment.is_demo.is_(False))
+        update_query = update_query.where(SupportAction.is_demo.is_(False))
+    assignments = list(database.scalars(assignment_query.order_by(CaseAssignment.assigned_at.desc(), CaseAssignment.id.desc())))
+    updates = list(database.scalars(update_query.order_by(SupportAction.created_at.asc(), SupportAction.id.asc())))
     return SupportRequestResponse(
         id=request.id,
         case_id=request.case_id,
@@ -92,9 +86,11 @@ def create_support_request(
     payload: SupportRequestCreate,
     user: User = Depends(require_roles(Role.VICTIM)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> SupportRequestResponse:
     try:
-        request = SupportService(database).create(
+        include_demo = settings.demo_data_enabled
+        request = SupportService(database, include_demo=include_demo).create(
             user=user,
             case_id=payload.case_id,
             category=payload.category,
@@ -102,31 +98,35 @@ def create_support_request(
         )
     except SupportServiceError as error:
         _raise_service_error(error)
-    return _response(request, database)
+    return _response(request, database, include_demo=include_demo)
 
 
 @router.get("/me", response_model=list[SupportRequestResponse])
 def list_support_requests(
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> list[SupportRequestResponse]:
     try:
-        requests = SupportService(database).list_for_user(user=user)
+        include_demo = settings.demo_data_enabled
+        requests = SupportService(database, include_demo=include_demo).list_for_user(user=user)
     except SupportServiceError as error:
         _raise_service_error(error)
-    return [_response(request, database) for request in requests]
+    return [_response(request, database, include_demo=include_demo) for request in requests]
 
 
 @router.get("/assigned", response_model=list[SupportRequestResponse])
 def list_assigned_support_requests(
     user: User = Depends(require_roles(Role.COUNSELLOR, Role.DISTRICT_ADMIN)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> list[SupportRequestResponse]:
     try:
-        requests = SupportService(database).list_for_user(user=user)
+        include_demo = settings.demo_data_enabled
+        requests = SupportService(database, include_demo=include_demo).list_for_user(user=user)
     except SupportServiceError as error:
         _raise_service_error(error)
-    return [_response(request, database) for request in requests]
+    return [_response(request, database, include_demo=include_demo) for request in requests]
 
 
 @router.get("/{request_id}", response_model=SupportRequestResponse)
@@ -134,9 +134,11 @@ def get_support_request(
     request_id: int = Path(gt=0),
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> SupportRequestResponse:
     try:
-        request = SupportService(database).get_for_user(user=user, request_id=request_id)
+        include_demo = settings.demo_data_enabled
+        request = SupportService(database, include_demo=include_demo).get_for_user(user=user, request_id=request_id)
     except SupportServiceError as error:
         _raise_service_error(error)
-    return _response(request, database)
+    return _response(request, database, include_demo=include_demo)

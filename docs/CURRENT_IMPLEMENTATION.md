@@ -1,4 +1,4 @@
-# SAATHI — Current Implementation Notes
+# SAHAYA — Current Implementation Notes
 
 This document supersedes older audit documents that described the pre-repair OTP architecture.
 

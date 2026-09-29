@@ -17,7 +17,7 @@ def utc_now() -> datetime:
 
 
 class DemoRecordMixin:
-    """Provenance fields required on every SAATHI database record.
+    """Provenance fields required on every SAHAYA database record.
 
     ``is_demo`` is data provenance only. Authentication and authorization code
     must never treat it as a credential, role grant, or production bypass.

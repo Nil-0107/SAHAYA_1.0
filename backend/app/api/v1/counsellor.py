@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import require_roles
+from app.core.config import Settings, get_settings
 from app.db.database import get_db
 from app.models.user import Role, User
 from app.schemas.counsellor import (
@@ -26,8 +27,9 @@ router = APIRouter(prefix="/counsellor", tags=["counsellor"])
 def counsellor_dashboard(
     user: User = Depends(require_roles(Role.COUNSELLOR)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> CounsellorDashboardResponse:
-    data = CounsellorDashboardService(database).dashboard(user=user)
+    data = CounsellorDashboardService(database, include_demo=settings.demo_data_enabled).dashboard(user=user)
     return CounsellorDashboardResponse(
         support_requests=[
             CounsellorSupportRequest(
@@ -76,5 +78,6 @@ def counsellor_dashboard(
 def counsellor_users(
     user: User = Depends(require_roles(Role.COUNSELLOR)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> list[CounsellorUserDetail]:
-    return [CounsellorUserDetail(**item) for item in CounsellorDashboardService(database).assigned_users(user=user)]
+    return [CounsellorUserDetail(**item) for item in CounsellorDashboardService(database, include_demo=settings.demo_data_enabled).assigned_users(user=user)]

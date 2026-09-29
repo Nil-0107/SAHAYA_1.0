@@ -1,4 +1,4 @@
-# SAATHI Final Flow Audit
+# SAHAYA Final Flow Audit
 
 This document records the implemented state after the correction pass. It is intentionally evidence-based: a flow is called complete only where backend/frontend code and automated tests support it.
 

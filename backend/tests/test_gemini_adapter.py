@@ -1,5 +1,7 @@
 """Mocked Google Gemini adapter contract tests."""
 
+import httpx
+
 from app.core.config import Settings
 from app.integrations.gemini import GeminiAdapter, GeminiUnavailableError
 
@@ -60,3 +62,64 @@ def test_gemini_adapter_fails_safely_without_key() -> None:
         assert "not configured" in str(error)
     else:
         raise AssertionError("Gemini must fail safely without a server key")
+
+
+def test_gemini_rest_retries_transient_provider_overload(monkeypatch) -> None:
+    settings = Settings(
+        environment="test",
+        database_url="sqlite:///:memory:",
+        cors_origins=(),
+        gemini_api_key="test-server-key",
+        gemini_model="test-model",
+    )
+    responses = [
+        httpx.Response(503, request=httpx.Request("POST", "https://example.test")),
+        httpx.Response(200, json={"candidates": []}, request=httpx.Request("POST", "https://example.test")),
+    ]
+    calls = []
+
+    def fake_post(*args, **kwargs):
+        calls.append((args, kwargs))
+        return responses.pop(0)
+
+    monkeypatch.setattr("app.integrations.gemini.httpx.post", fake_post)
+
+    result = GeminiAdapter(settings)._post_json("https://example.test", {"hello": "world"}, timeout=1.0)
+
+    assert result == {"candidates": []}
+    assert len(calls) == 2
+
+
+def test_gemini_health_checks_generation_after_model_reachability(monkeypatch) -> None:
+    settings = Settings(
+        environment="test",
+        database_url="sqlite:///:memory:",
+        cors_origins=(),
+        gemini_api_key="test-server-key",
+        gemini_model="test-model",
+    )
+    monkeypatch.setattr(
+        "app.integrations.gemini.httpx.get",
+        lambda *args, **kwargs: httpx.Response(
+            200,
+            json={"supportedGenerationMethods": ["generateContent"]},
+            request=httpx.Request("GET", "https://example.test"),
+        ),
+    )
+    monkeypatch.setattr(
+        "app.integrations.gemini.httpx.post",
+        lambda *args, **kwargs: httpx.Response(
+            200,
+            json={"candidates": [{"content": {"parts": [{"text": "OK"}]}}]},
+            request=httpx.Request("POST", "https://example.test"),
+        ),
+    )
+
+    health = GeminiAdapter(settings).health()
+
+    assert health == {
+        "configured": True,
+        "reachable": True,
+        "generation_working": True,
+        "status": "working",
+    }

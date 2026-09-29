@@ -82,7 +82,7 @@ export function Modal({
           type="button"
           aria-label="Close dialog"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-saathi-500"
+          className="absolute right-4 top-4 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sahaya-500"
         >
           <X size={18} />
         </button>

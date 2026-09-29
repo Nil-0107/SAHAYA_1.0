@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import select, update
+from sqlalchemy import select, true, update
 from sqlalchemy.orm import Session
 
 from app.models.audit_log import AuditLog
@@ -21,14 +21,18 @@ class NotificationServiceError(RuntimeError):
 
 
 class NotificationService:
-    def __init__(self, database: Session) -> None:
+    def __init__(self, database: Session, *, include_demo: bool = True) -> None:
         self.database = database
+        self.include_demo = include_demo
+
+    def _scope(self):
+        return true() if self.include_demo else Notification.is_demo.is_(False)
 
     def list_for_user(self, *, user: User) -> list[Notification]:
         return list(
             self.database.scalars(
                 select(Notification)
-                .where(Notification.user_id == user.id)
+                .where(Notification.user_id == user.id, self._scope())
                 .order_by(Notification.created_at.desc(), Notification.id.desc())
             )
         )
@@ -38,6 +42,7 @@ class NotificationService:
             select(Notification).where(
                 Notification.id == notification_id,
                 Notification.user_id == user.id,
+                self._scope(),
             )
         )
         if notification is None:
@@ -61,7 +66,7 @@ class NotificationService:
     def mark_all_read(self, *, user: User) -> int:
         result = self.database.execute(
             update(Notification)
-            .where(Notification.user_id == user.id, Notification.is_read.is_(False))
+            .where(Notification.user_id == user.id, Notification.is_read.is_(False), self._scope())
             .values(is_read=True, read_at=datetime.now(timezone.utc))
         )
         self.database.add(

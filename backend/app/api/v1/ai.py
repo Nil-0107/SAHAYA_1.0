@@ -66,7 +66,7 @@ def chat(
 
 @router.get("/health")
 def ai_health(settings: Settings = Depends(get_settings)) -> dict[str, object]:
-    return {"configured": bool(settings.gemini_api_key), "model": settings.gemini_model}
+    return {**GeminiAdapter(settings).health(), "model": settings.gemini_model}
 
 
 @router.post("/voice/transcribe", response_model=AIVoiceResponse)
@@ -85,7 +85,7 @@ async def transcribe_voice(
         raise HTTPException(status_code=413, detail={"code": "AUDIO_TOO_LARGE", "message": "Audio exceeds the 10 MB limit."})
     if not audio:
         raise HTTPException(status_code=400, detail={"code": "EMPTY_AUDIO", "message": "The audio recording is empty."})
-    system = "You are a transcription component for SAATHI. Transcribe only the user's spoken words. Do not infer, diagnose, summarize, or add facts."
+    system = "You are a transcription component for SAHAYA. Transcribe only the user's spoken words. Do not infer, diagnose, summarize, or add facts."
     try:
         transcript = GeminiAdapter(settings).transcribe_audio(system_instruction=system, audio=audio, mime_type=mime_type)
     except GeminiUnavailableError as error:
@@ -100,12 +100,12 @@ def speak_text(payload: dict, user: User = Depends(get_current_ready_user)):
         raise HTTPException(status_code=422, detail={"code": "TTS_TEXT_INVALID", "message": "Text must be between 1 and 4000 characters"})
     try:
         import pyttsx3
-        fd, path = tempfile.mkstemp(suffix=".wav", prefix="saathi-tts-")
+        fd, path = tempfile.mkstemp(suffix=".wav", prefix="sahaya-tts-")
         Path(path).unlink(missing_ok=True)
         engine = pyttsx3.init()
         engine.save_to_file(text, path)
         engine.runAndWait()
         engine.stop()
-        return FileResponse(path, media_type="audio/wav", filename="saathi-response.wav", background=None)
+        return FileResponse(path, media_type="audio/wav", filename="sahaya-response.wav", background=None)
     except Exception as exc:
         raise HTTPException(status_code=503, detail={"code": "TTS_UNAVAILABLE", "message": "Text-to-speech is unavailable on this server"}) from exc

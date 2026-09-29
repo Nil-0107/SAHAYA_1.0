@@ -1,1 +1,1 @@
-"""Local scikit-learn/joblib inference package."""
+"""Local Logistic Regression and supplemental DistilBERT inference package."""

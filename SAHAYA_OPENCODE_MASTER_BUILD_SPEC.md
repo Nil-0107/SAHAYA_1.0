@@ -1,9 +1,9 @@
-# SAATHI — OpenCode Master Build Specification
+# SAHAYA — OpenCode Master Build Specification
 ## PRD + TRD + UI Contract + Backend Contract + ML Contract + Agent System + Sequential Prompts
 
 > **Purpose:** This document is the single implementation contract for OpenCode.
 >
-> The target is to reproduce the supplied SAATHI UI faithfully as a production-style React application and connect it to a corresponding FastAPI backend.
+> The target is to reproduce the supplied SAHAYA UI faithfully as a production-style React application and connect it to a corresponding FastAPI backend.
 >
 > **Do not redesign the product. Do not invent missing ML capabilities. Do not silently expand scope.**
 
@@ -14,8 +14,8 @@
 OpenCode MUST use sources in this priority order:
 
 1. This document.
-2. `trd_saathi(1).pdf` — supplied Technical Requirements Document.
-3. `saathi_dynamic_distress_ui_updated.html` — visual/interaction reference.
+2. `trd_sahaya(1).pdf` — supplied Technical Requirements Document.
+3. `sahaya_dynamic_distress_ui_updated.html` — visual/interaction reference.
 4. Actual uploaded ML artifacts:
    - `logistic_regression_emotion_model(1)(2).joblib`
    - `tfidf_vectorizer(1)(1)(1).joblib`
@@ -51,7 +51,7 @@ If a capability is not backed by a real backend/service/model, show a truthful u
 
 ## 1.2 UI fidelity
 
-The supplied `saathi_dynamic_distress_ui_updated.html` is the visual reference.
+The supplied `sahaya_dynamic_distress_ui_updated.html` is the visual reference.
 
 Preserve:
 
@@ -119,7 +119,7 @@ Use `.env` locally and a secret manager in production.
 
 ## 2.1 Product
 
-SAATHI is a multi-role support platform with:
+SAHAYA is a multi-role support platform with:
 
 - account creation/login
 - mobile verification
@@ -340,7 +340,7 @@ Heading:
 
 Welcome card:
 
-`Welcome to SAATHI`
+`Welcome to SAHAYA`
 
 Buttons:
 
@@ -719,7 +719,7 @@ From the supplied TRD:
 # 12. REPOSITORY STRUCTURE
 
 ```text
-saathi/
+sahaya/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
@@ -1390,7 +1390,7 @@ Create a commit after a successful phase.
 Recommended commits:
 
 ```text
-chore: initialize saathi architecture
+chore: initialize sahaya architecture
 feat: add database foundation
 feat: add authentication
 feat: add pyotp twilio otp verification
@@ -1486,9 +1486,9 @@ You are Agent 0, the senior repository auditor.
 
 Read completely:
 
-- SAATHI_MASTER_SPEC.md
-- trd_saathi(1).pdf
-- saathi_dynamic_distress_ui_updated.html
+- SAHAYA_MASTER_SPEC.md
+- trd_sahaya(1).pdf
+- sahaya_dynamic_distress_ui_updated.html
 - logistic_regression_emotion_model(1)(2).joblib
 - tfidf_vectorizer(1)(1)(1).joblib
 
@@ -1532,9 +1532,9 @@ STOP after the audit.
 ## PROMPT 02 — ARCHITECTURE
 
 ```text
-You are Agent 1, the SAATHI architect.
+You are Agent 1, the SAHAYA architect.
 
-Use SAATHI_MASTER_SPEC.md as the implementation contract.
+Use SAHAYA_MASTER_SPEC.md as the implementation contract.
 
 Create:
 docs/architecture.md
@@ -1827,7 +1827,7 @@ STOP.
 ```text
 Now implement the React frontend.
 
-Use the supplied saathi_dynamic_distress_ui_updated.html only as the visual reference.
+Use the supplied sahaya_dynamic_distress_ui_updated.html only as the visual reference.
 
 Do NOT copy its old JS architecture.
 
@@ -1990,7 +1990,7 @@ STOP.
 ## PROMPT 21 — UI QA
 
 ```text
-Compare the React application against saathi_dynamic_distress_ui_updated.html.
+Compare the React application against sahaya_dynamic_distress_ui_updated.html.
 
 Test:
 1440
@@ -2142,7 +2142,7 @@ Never collapse these into one fake "AI risk model."
 
 # 30. FINAL SUCCESS CONDITION
 
-The finished product should feel like the supplied SAATHI UI, but be implemented as:
+The finished product should feel like the supplied SAHAYA UI, but be implemented as:
 
 ```text
 React + TypeScript + Tailwind

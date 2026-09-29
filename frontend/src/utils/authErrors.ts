@@ -28,11 +28,20 @@ export function authErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
     const code = error.response?.data?.error?.code;
     if (typeof code === "string" && messages[code]) return messages[code];
-    if (error.response?.status === 503 || !error.response) {
-      return "The authentication service is temporarily unavailable. Please try again.";
-    }
     const message = error.response?.data?.error?.message;
     if (typeof message === "string" && message.length < 180) return message;
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      return "Authentication is required to continue. Please sign in again.";
+    }
+    if (error.response?.status === 422 || error.response?.status === 400) {
+      return "The request could not be validated. Please check the entered information.";
+    }
+    if (error.response?.status && error.response.status >= 500) {
+      return "The service is temporarily unavailable. Please try again.";
+    }
+    if (!error.response) {
+      return "The service could not be reached. Check your connection and try again.";
+    }
   }
   return fallback;
 }

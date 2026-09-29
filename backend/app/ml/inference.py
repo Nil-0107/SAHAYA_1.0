@@ -8,9 +8,11 @@ signals.
 from __future__ import annotations
 
 import math
+import logging
 from dataclasses import dataclass
 from typing import Any
 
+from app.ml.emotion import EmotionPrediction, EmotionModelError, get_emotion_classifier
 from app.ml import loader
 from app.ml.loader import MLArtifactError
 
@@ -21,6 +23,7 @@ class MLPrediction:
     label: str | None
     confidence: float | None
     model_version: str
+    emotion: EmotionPrediction | None = None
 
 
 class MLInputError(ValueError):
@@ -29,6 +32,9 @@ class MLInputError(ValueError):
 
 class MLPredictionError(RuntimeError):
     """Raised when the loaded artifacts fail during inference."""
+
+
+logger = logging.getLogger(__name__)
 
 
 class MLService:
@@ -69,11 +75,20 @@ class MLService:
         except (TypeError, ValueError) as exc:
             raise MLPredictionError("ML prediction returned an invalid class") from exc
 
+        emotion = None
+        try:
+            emotion = get_emotion_classifier().predict(text)
+        except EmotionModelError:
+            # Logistic Regression remains the working baseline/fallback if the
+            # supplemental transformer cannot be loaded or invoked.
+            logger.warning("Supplemental DistilBERT emotion inference unavailable")
+
         return MLPrediction(
             class_id=class_value,
             label=None,
             confidence=confidence,
             model_version=loader.MODEL_ARTIFACT_ID,
+            emotion=emotion,
         )
 
     @staticmethod

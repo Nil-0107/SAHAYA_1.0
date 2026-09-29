@@ -21,7 +21,7 @@ export function MetricCard({
           {helper ? <p className="mt-1 text-xs text-slate-500">{helper}</p> : null}
         </div>
         {Icon ? (
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-saathi-50 text-saathi-700">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-sahaya-50 text-sahaya-700">
             <Icon size={18} />
           </span>
         ) : null}

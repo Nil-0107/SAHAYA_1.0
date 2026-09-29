@@ -24,6 +24,22 @@ def test_vectorizer_and_model_load_once() -> None:
     assert loader.get_model() is model
 
 
+def test_distilbert_emotion_inference_returns_all_six_dataset_classes() -> None:
+    pytest.importorskip("torch")
+    pytest.importorskip("transformers")
+
+    from app.ml.emotion import CHECKPOINT_ID, EMOTION_LABELS, get_emotion_classifier
+
+    result = get_emotion_classifier().predict("I feel nervous and afraid about what may happen next.")
+
+    assert result.model_version == CHECKPOINT_ID
+    assert result.label in EMOTION_LABELS
+    assert tuple(result.probabilities) == EMOTION_LABELS
+    assert len(result.probabilities) == 6
+    assert sum(result.probabilities.values()) == pytest.approx(1.0, abs=1e-5)
+    assert 0.0 <= result.confidence <= 1.0
+
+
 def test_valid_text_returns_numeric_class_unknown_label_and_confidence() -> None:
     result = MLService().predict("I am uncertain about what happened")
 

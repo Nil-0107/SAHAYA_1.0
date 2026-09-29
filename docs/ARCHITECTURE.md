@@ -1,4 +1,4 @@
-# SAATHI Final Architecture
+# SAHAYA Final Architecture
 
 **Status:** Final architecture definition  
 **Scope:** MVP modular monolith  
@@ -6,7 +6,7 @@
 
 ## 1. Architecture goals
 
-SAATHI will be implemented as one frontend, one FastAPI backend, one relational database, and local file storage:
+SAHAYA will be implemented as one frontend, one FastAPI backend, one relational database, and local file storage:
 
 ```text
 React
@@ -435,7 +435,7 @@ Required configuration groups:
 - Twilio account/authentication and SMS destination settings.
 - Server-only TOTP secret-encryption key.
 
-OTP/Twilio environment variables are read only by the backend: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, optional `TWILIO_VERIFY_SERVICE_SID` placeholder, optional `TWILIO_API_KEY_SID`/`TWILIO_API_KEY_SECRET`, and one of `TWILIO_MESSAGING_SERVICE_SID` or `TWILIO_FROM_NUMBER`. The selected implementation uses PyOTP with Twilio Programmable Messaging, so the Verify service SID is not consumed by the current TOTP service. `SAATHI_OTP_SECRET_ENCRYPTION_KEY` protects TOTP secrets at rest. None of these values use a `VITE_` prefix.
+OTP/Twilio environment variables are read only by the backend: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, optional `TWILIO_VERIFY_SERVICE_SID` placeholder, optional `TWILIO_API_KEY_SID`/`TWILIO_API_KEY_SECRET`, and one of `TWILIO_MESSAGING_SERVICE_SID` or `TWILIO_FROM_NUMBER`. The selected implementation uses PyOTP with Twilio Programmable Messaging, so the Verify service SID is not consumed by the current TOTP service. `SAHAYA_OTP_SECRET_ENCRYPTION_KEY` protects TOTP secrets at rest. None of these values use a `VITE_` prefix.
 - Gemini API key and model.
 - ML artifact paths and expected model metadata.
 - Logging level and redaction policy.
@@ -1394,4 +1394,4 @@ Each phase must preserve the module boundaries above. A feature must not be call
 11. **Controlled demo namespace:** module-only seed/reset, every row marked, no auth bypass.
 12. **No unnecessary infrastructure:** no microservices, Kafka, Redis, Kubernetes, or workers.
 
-This is the final architecture for the SAATHI MVP. Product code must be implemented only within these boundaries.
+This is the final architecture for the SAHAYA MVP. Product code must be implemented only within these boundaries.

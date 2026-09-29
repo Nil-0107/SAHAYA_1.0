@@ -25,8 +25,8 @@ PASSWORD = "ValidPass!123"
 
 @pytest.fixture
 def database(monkeypatch: pytest.MonkeyPatch) -> Generator[Session, None, None]:
-    monkeypatch.setenv("SAATHI_ENV", "test")
-    monkeypatch.setenv("SAATHI_DATABASE_URL", "sqlite:///:memory:")
+    monkeypatch.setenv("SAHAYA_ENV", "test")
+    monkeypatch.setenv("SAHAYA_DATABASE_URL", "sqlite:///:memory:")
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},

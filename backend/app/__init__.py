@@ -1,1 +1,1 @@
-"""SAATHI backend application package."""
+"""SAHAYA backend application package."""

@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -124,7 +124,7 @@ def test_signup_login_me_and_refresh(database: Session, client: TestClient) -> N
     login_body = login.json()
     assert login_body["token_type"] == "bearer"
     assert login_body["user"]["phone"] == "+919876543210"
-    assert "saathi_refresh" in client.cookies
+    assert "sahaya_refresh" in client.cookies
     access_token = login_body["access_token"]
 
     me = client.get("/api/v1/me", headers={"Authorization": f"Bearer {access_token}"})
@@ -199,7 +199,7 @@ def test_logout_revokes_access_and_clears_refresh_cookie(
     logout = client.post("/api/v1/auth/logout", headers=headers)
     assert logout.status_code == 200
     assert logout.json() == {"message": "Logged out"}
-    assert "saathi_refresh" not in client.cookies
+    assert "sahaya_refresh" not in client.cookies
 
     revoked = client.get("/api/v1/me", headers=headers)
     assert revoked.status_code == 401
@@ -300,6 +300,38 @@ def test_public_signup_cannot_escalate_to_privileged_role(client: TestClient) ->
         },
     )
     assert response.status_code == 422
+
+
+def test_open_signup_supports_every_role_with_geography(client: TestClient, database: Session) -> None:
+    staff = client.post(
+        "/api/v1/auth/signup",
+        json={
+            "phone": "9876511111",
+            "email": "district.open@example.invalid",
+            "password": PASSWORD,
+            "date_of_birth": "1990-05-05",
+            "role": "district_admin",
+            "state_name": "Open State",
+            "district_name": "Open District",
+        },
+    )
+    assert staff.status_code == 201, staff.json()
+    body = staff.json()
+    assert body["user"]["role"] == "district_admin"
+    user = database.scalar(select(User).where(User.phone == "+919876511111"))
+    assert user is not None and user.state_id is not None and user.district_id is not None
+
+    missing_geo = client.post(
+        "/api/v1/auth/signup",
+        json={
+            "phone": "9876522222",
+            "email": "counsellor.open@example.invalid",
+            "password": PASSWORD,
+            "date_of_birth": "1990-05-05",
+            "role": "counsellor",
+        },
+    )
+    assert missing_geo.status_code == 422
 
 
 def test_suspended_account_cannot_login(database: Session, client: TestClient) -> None:

@@ -1,6 +1,6 @@
-# SAATHI — corrected local build
+# SAHAYA — corrected local build
 
-SAATHI is a React + FastAPI well-being/support platform with a strict administrative hierarchy, local ML inference, server-side Gemini support, case-document upload, notifications, and role-scoped dashboards.
+SAHAYA is a React + FastAPI well-being/support platform with a strict administrative hierarchy, local ML inference, server-side Gemini support, case-document upload, notifications, and role-scoped dashboards.
 
 ## Current implementation
 
@@ -26,7 +26,7 @@ Counsellor
 - Dashboards poll notifications so new events appear without a manual refresh.
 - Administrators can view authorised user profile/contact/case/support/check-in metadata within their scope.
 - Counsellors can view users connected to their active assignments.
-- The 10-question open-ended well-being check submits all answers through the supplied TF-IDF + Logistic Regression model.
+- The 10-question open-ended well-being check submits all answers through the supplied TF-IDF + Logistic Regression baseline and an additional backend-only DistilBERT emotion classifier. The emotion classifier is not a distress, diagnostic, or clinically validated model.
 - Voice recording uses the browser microphone and server-side Gemini transcription when `GEMINI_API_KEY` is configured.
 - Gemini has both the official `google-genai` SDK path and an HTTP fallback so a missing SDK package does not silently break AI support.
 
@@ -54,26 +54,26 @@ Put the Gemini key **only** in `backend/.env`:
 
 ```env
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.8-flash
 ```
 
 Restart FastAPI after changing `.env`.
 
 ## Development database
 
-The included `backend/saathi.db` is a current-schema development database containing the synthetic hierarchy and demo records.
+The included `backend/sahaya.db` is a current-schema development database containing the synthetic hierarchy and demo records.
 
 To recreate demo data from the current schema:
 
 ```bash
-SAATHI_ENV=development python3 -m app.db.init_db
-SAATHI_ENV=development python3 -m app.demo.seed_demo
+SAHAYA_ENV=development python3 -m app.db.init_db
+SAHAYA_ENV=development python3 -m app.demo.seed_demo
 ```
 
 Or use:
 
 ```bash
-SAATHI_ENV=development ./scripts/seed-demo.sh
+SAHAYA_ENV=development ./scripts/seed-demo.sh
 ```
 
 ## Frontend
@@ -107,7 +107,7 @@ All demo accounts are synthetic and development-only.
 - Support requests are routed to the administrative hierarchy; counsellors receive case notifications after an actual active assignment rather than receiving every district request.
 - Case-document uploads notify the authorised hierarchy and active assigned counsellors.
 - The victim dashboard displays the latest real ML classifier confidence and a confidence trend from stored check-ins.
-- There is only one supplied fitted classifier artifact in this repository: TF-IDF vectorizer + Logistic Regression. A second fitted model cannot be displayed until its artifact is supplied.
+- The baseline classifier is the supplied TF-IDF + Logistic Regression artifact. The supplemental emotion checkpoint is `bhadresh-savani/distilbert-base-uncased-emotion` (Hugging Face revision `ce6f4ffcde7642ca2cac02381a16da38e5498ff7`), fine-tuned on the DAIR.AI Emotion six-class dataset (`sadness`, `joy`, `love`, `anger`, `fear`, `surprise`).
 - Voice input uses browser SpeechRecognition when available, then recorded-audio Gemini transcription as fallback. **pyttsx3 is text-to-speech, not speech-to-text**, so it is used for the AI "Read aloud" action.
 - Run `scripts/set_gemini_key.sh` to set the Gemini key without putting it in the frontend or committing it.
 

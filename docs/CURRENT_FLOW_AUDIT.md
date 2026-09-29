@@ -1,10 +1,10 @@
-# SAATHI Current Flow Audit
+# SAHAYA Current Flow Audit
 
 **Audit scope:** read-only inspection completed before the final correction pass. This document records the implementation that existed at the start of the correction pass, including the recently connected role dashboards and deterministic priority work. It is not an acceptance report.
 
 ## 1. Current architecture
 
-SAATHI is a modular FastAPI + SQLAlchemy backend with a React/Vite/Tailwind frontend.
+SAHAYA is a modular FastAPI + SQLAlchemy backend with a React/Vite/Tailwind frontend.
 
 - Backend entry point: `backend/app/main.py`
 - API router composition: `backend/app/api/v1/router.py`
@@ -22,17 +22,17 @@ The project does not currently have a migration system. The available schema pat
 
 The following repository sources were inspected:
 
-- `SAATHI_OPENCODE_MASTER_BUILD_SPEC.md`
+- `SAHAYA_OPENCODE_MASTER_BUILD_SPEC.md`
 - `docs/ARCHITECTURE.md`
 - `docs/ML_ARTIFACT_REPORT.md`
 - `docs/SECURITY_AUDIT.md`
-- `docs/RUNNING_SAATHI.md`
+- `docs/RUNNING_SAHAYA.md`
 - `docs/DEMO_ACCOUNTS.md`
 - `docs/REPOSITORY_AUDIT.md`
-- `saathi_dynamic_distress_ui_updated.html`
-- `prd_saathi(1).pdf`
-- `ui_saathi.pdf`
-- `backend_saathi.pdf`
+- `sahaya_dynamic_distress_ui_updated.html`
+- `prd_sahaya(1).pdf`
+- `ui_sahaya.pdf`
+- `backend_sahaya.pdf`
 
 The master build specification and architecture document are the clearest executable contracts. The referenced TRD file is not present in the workspace. The PDF sources were not rendered during this audit; repository documentation and the master specification were used for the recorded findings.
 

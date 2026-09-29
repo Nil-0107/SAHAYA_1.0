@@ -19,3 +19,8 @@ def initialize_database() -> None:
         if "date_of_birth" not in columns and str(engine.url).startswith("sqlite"):
             with engine.begin() as connection:
                 connection.execute(text("ALTER TABLE users ADD COLUMN date_of_birth DATE"))
+    if "checkins" in inspector.get_table_names():
+        columns = {column["name"] for column in inspector.get_columns("checkins")}
+        if "emotion_result" not in columns and str(engine.url).startswith("sqlite"):
+            with engine.begin() as connection:
+                connection.execute(text("ALTER TABLE checkins ADD COLUMN emotion_result JSON"))

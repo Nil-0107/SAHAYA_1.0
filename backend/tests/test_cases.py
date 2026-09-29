@@ -30,10 +30,10 @@ PASSWORD = "ValidPass!123"
 
 @pytest.fixture
 def database(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[Session, None, None]:
-    monkeypatch.setenv("SAATHI_ENV", "test")
-    monkeypatch.setenv("SAATHI_DATABASE_URL", "sqlite:///:memory:")
-    monkeypatch.setenv("SAATHI_UPLOAD_DIRECTORY", str(tmp_path / "uploads"))
-    monkeypatch.setenv("SAATHI_UPLOAD_MAX_BYTES", str(10 * 1024 * 1024))
+    monkeypatch.setenv("SAHAYA_ENV", "test")
+    monkeypatch.setenv("SAHAYA_DATABASE_URL", "sqlite:///:memory:")
+    monkeypatch.setenv("SAHAYA_UPLOAD_DIRECTORY", str(tmp_path / "uploads"))
+    monkeypatch.setenv("SAHAYA_UPLOAD_MAX_BYTES", str(10 * 1024 * 1024))
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -164,7 +164,7 @@ def test_upload_rejects_executable_mismatch_and_oversized_files(
     assert mismatch.status_code == 415
     assert mismatch.json()["error"]["code"] == "INVALID_FILE_SIGNATURE"
 
-    monkeypatch.setenv("SAATHI_UPLOAD_MAX_BYTES", "4")
+    monkeypatch.setenv("SAHAYA_UPLOAD_MAX_BYTES", "4")
     oversized = client.post(
         "/api/v1/cases/upload",
         data={"case_id": str(case.id)},

@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, DemoRecordMixin
@@ -36,6 +36,7 @@ class Checkin(DemoRecordMixin, Base):
     predicted_label: Mapped[str | None] = mapped_column(String(80))
     confidence: Mapped[float | None] = mapped_column(Float)
     model_version: Mapped[str | None] = mapped_column(String(120), index=True)
+    emotion_result: Mapped[dict | None] = mapped_column(JSON)
 
     user: Mapped["User"] = relationship(back_populates="checkins", foreign_keys=[user_id])
     case: Mapped["Case | None"] = relationship(back_populates="checkins")

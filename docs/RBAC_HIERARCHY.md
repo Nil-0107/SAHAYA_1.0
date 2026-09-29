@@ -1,4 +1,4 @@
-# SAATHI RBAC Hierarchy
+# SAHAYA RBAC Hierarchy
 
 ## Implemented hierarchy
 

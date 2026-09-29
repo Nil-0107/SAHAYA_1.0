@@ -1,4 +1,4 @@
-"""E.164 normalization for SAATHI account-mobile numbers."""
+"""E.164 normalization for SAHAYA account-mobile numbers."""
 
 from __future__ import annotations
 

@@ -18,13 +18,14 @@ export interface AIVoiceResponse { transcript: string; source: "gemini" | "unava
 
 export async function transcribeVoice(blob: Blob): Promise<AIVoiceResponse> {
   const form = new FormData();
-  form.append("file", blob, "saathi-voice.webm");
+  form.append("file", blob, "sahaya-voice.webm");
   const { data } = await api.post<AIVoiceResponse>("/ai/voice/transcribe", form);
   return data;
 }
 
 
-export interface AIHealth { configured: boolean; model: string; }
+export type AIHealthStatus = "unconfigured" | "reachable" | "working" | "unavailable";
+export interface AIHealth { configured: boolean; reachable: boolean; generation_working: boolean; status: AIHealthStatus; model: string; }
 
 export async function health(): Promise<AIHealth> { const { data } = await api.get<AIHealth>("/ai/health"); return data; }
 

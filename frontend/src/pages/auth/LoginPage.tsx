@@ -5,15 +5,13 @@ import { Button } from "../../components/common/Button";
 import { Card } from "../../components/common/Card";
 import { InlineAlert } from "../../components/feedback/FeedbackStates";
 import { FormField, TextInput } from "../../components/forms/FormField";
-import {
-  demoLoginEnabled,
-  demoLoginPersonas,
-  postAuthenticationPath,
-  type DemoLoginPersona,
-} from "../../config/demoAuth";
+import { postAuthenticationPath } from "../../config/authRouting";
+import { localTestAccounts } from "../../config/localTestAuth";
 import { useAuth } from "../../context/AuthContext";
-import { DemoLoginSelector } from "../../features/auth/DemoLoginSelector";
+import { LocalRoleLoginSelector } from "../../features/auth/LocalRoleLoginSelector";
+import { RoleLoginSelector } from "../../features/auth/RoleLoginSelector";
 import { authErrorMessage } from "../../utils/authErrors";
+import type { UserRole } from "../../types";
 
 interface LoginLocationState {
   from?: { pathname?: string };
@@ -27,17 +25,12 @@ export function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole>("victim");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const locationState = location.state as LoginLocationState | null;
 
   if (user) return <Navigate to={postAuthenticationPath(user)} replace />;
-
-  const selectPersona = (persona: DemoLoginPersona) => {
-    setIdentifier(persona.email);
-    setPassword(persona.password);
-    setError("");
-  };
 
   const submitLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -58,7 +51,7 @@ export function LoginPage() {
 
   return (
     <section className="grid items-stretch gap-6 lg:grid-cols-[1fr_450px]">
-      <div className="relative hidden overflow-hidden rounded-[28px] bg-saathi-900 p-10 text-white shadow-card lg:flex lg:flex-col lg:justify-between">
+      <div className="relative hidden overflow-hidden rounded-[28px] bg-sahaya-900 p-10 text-white shadow-card lg:flex lg:flex-col lg:justify-between">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-teal-400/10" />
         <div className="relative">
           <p className="text-[11px] font-extrabold uppercase tracking-[.16em] text-teal-200">Secure access</p>
@@ -72,9 +65,13 @@ export function LoginPage() {
       </div>
 
       <Card className="w-full p-6 sm:p-8">
-        <p className="text-[11px] font-extrabold uppercase tracking-[.16em] text-saathi-700">Welcome back</p>
-        <h1 className="mt-2 text-2xl font-extrabold text-slate-900">Log in to SAATHI</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">New users create a Victim / User account first.</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-[.16em] text-sahaya-700">Welcome back</p>
+        <h1 className="mt-2 text-2xl font-extrabold text-slate-900">Log in to SAHAYA</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-500">New users choose their account type and create an account first.</p>
+
+        <div className="mt-5">
+          <RoleLoginSelector selected={selectedRole} onSelect={setSelectedRole} />
+        </div>
 
         {sessionExpired || locationState?.reason === "session-expired" ? (
           <div className="mt-4"><InlineAlert tone="info">Your session has expired. Please sign in again.</InlineAlert></div>
@@ -111,7 +108,7 @@ export function LoginPage() {
                 type="button"
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 onClick={() => setShowPassword((current) => !current)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-saathi-700 focus:outline-none focus:ring-2 focus:ring-saathi-500"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-sahaya-700 focus:outline-none focus:ring-2 focus:ring-sahaya-500"
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
@@ -121,15 +118,22 @@ export function LoginPage() {
           <Button type="submit" loading={isSubmitting}>Log in securely</Button>
         </form>
 
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center text-xs text-slate-500">
-          Do not have an account? <Link to="/signup/role" className="font-extrabold text-saathi-700">Create one</Link>
-        </div>
-
-        {demoLoginEnabled ? (
+        {import.meta.env.DEV && localTestAccounts.length > 0 ? (
           <div className="mt-5">
-            <DemoLoginSelector personas={demoLoginPersonas} onSelect={selectPersona} />
+            <LocalRoleLoginSelector
+              accounts={localTestAccounts}
+              onSelect={(account) => {
+                setIdentifier(account.identifier);
+                setPassword(account.password);
+                setError("");
+              }}
+            />
           </div>
         ) : null}
+
+        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center text-xs text-slate-500">
+          Do not have an account? <Link to="/signup/role" className="font-extrabold text-sahaya-700">Create one</Link>
+        </div>
       </Card>
     </section>
   );

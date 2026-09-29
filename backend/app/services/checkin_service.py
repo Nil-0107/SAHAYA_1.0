@@ -31,9 +31,10 @@ class CreatedCheckin:
 
 
 class CheckinService:
-    def __init__(self, database: Session, ml_service: MLService | None = None) -> None:
+    def __init__(self, database: Session, ml_service: MLService | None = None, *, include_demo: bool = True) -> None:
         self.database = database
         self.ml_service = ml_service or MLService()
+        self.include_demo = include_demo
 
     def create(
         self,
@@ -63,6 +64,7 @@ class CheckinService:
             predicted_label=prediction.label,
             confidence=prediction.confidence,
             model_version=prediction.model_version,
+            emotion_result=prediction.emotion.as_dict() if prediction.emotion is not None else None,
         )
         self.database.add(record)
         try:
@@ -81,7 +83,7 @@ class CheckinService:
                     },
                 )
             )
-            recipients = list(self.database.scalars(select(User).where(User.id != user.id)))
+            recipients = list(self.database.scalars(select(User).where(User.id != user.id, User.is_demo.is_(False))))
             for recipient in recipients:
                 in_scope = (
                     recipient.role == Role.NATIONAL_ADMIN
@@ -108,8 +110,8 @@ class CheckinService:
     def list_for_user(self, *, user: User) -> list[Checkin]:
         return list(
             self.database.scalars(
-                select(Checkin)
-                .where(Checkin.user_id == user.id)
+            select(Checkin)
+                .where(Checkin.user_id == user.id, *(() if self.include_demo else (Checkin.is_demo.is_(False),)))
                 .order_by(Checkin.created_at.desc(), Checkin.id.desc())
             )
         )
@@ -119,6 +121,7 @@ class CheckinService:
             select(Checkin).where(
                 Checkin.id == checkin_id,
                 Checkin.user_id == user.id,
+                *(() if self.include_demo else (Checkin.is_demo.is_(False),)),
             )
         )
         if record is None:
@@ -132,6 +135,7 @@ class CheckinService:
             select(Case).where(
                 Case.id == case_id,
                 Case.owner_user_id == user.id,
+                *(() if self.include_demo else (Case.is_demo.is_(False),)),
             )
         )
         if case is None:

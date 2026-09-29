@@ -60,13 +60,25 @@ class AuthService:
         password: str,
         date_of_birth,
         role: Role,
+        state_name: str | None = None,
+        district_name: str | None = None,
     ) -> User:
-        if role != Role.VICTIM:
-            raise AuthServiceError(
-                403,
-                "PRIVILEGED_ROLE_NOT_PUBLIC",
-                "Privileged roles require controlled provisioning",
-            )
+        # Open signup: every role can self-register. Staff roles carry their
+        # geographic scope (state/district) so notifications route correctly.
+        state_id: int | None = None
+        district_id: int | None = None
+        if role == Role.STATE_ADMIN:
+            if not state_name:
+                raise AuthServiceError(422, "STATE_REQUIRED", "State name is required for State Administrator signup")
+            state_id = self._find_or_create_state(state_name).id
+        elif role in {Role.DISTRICT_ADMIN, Role.DISTRICT_OFFICER, Role.COUNSELLOR}:
+            if not state_name or not district_name:
+                raise AuthServiceError(422, "DISTRICT_REQUIRED", "State and district names are required for this role")
+            state = self._find_or_create_state(state_name)
+            district = self._find_or_create_district(state_name=state.name, state_id=state.id, district_name=district_name)
+            state_id, district_id = state.id, district.id
+            if role == Role.DISTRICT_OFFICER:
+                role = Role.DISTRICT_ADMIN
 
         conditions = [User.phone == phone]
         if email is not None:
@@ -88,6 +100,8 @@ class AuthService:
             phone_verified_at=datetime.now(timezone.utc),
             profile_completed=False,
             is_active=True,
+            state_id=state_id,
+            district_id=district_id,
         )
         self.database.add(user)
         try:
@@ -96,7 +110,7 @@ class AuthService:
                 actor_user_id=user.id,
                 action="AUTH_SIGNUP",
                 resource_id=str(user.id),
-                metadata={"role": role.value},
+                metadata={"role": role.value, "state_id": state_id, "district_id": district_id},
             )
             self.database.commit()
         except IntegrityError as exc:
@@ -280,8 +294,9 @@ class AuthService:
         if user.session_version != token_session_version:
             raise AuthServiceError(401, "SESSION_REVOKED", "Authentication session is no longer valid")
 
-    @staticmethod
-    def _ensure_account_available(user: User) -> None:
+    def _ensure_account_available(self, user: User) -> None:
+        if self.settings.environment == "production" and user.is_demo:
+            raise AuthServiceError(403, "ACCOUNT_UNAVAILABLE", "This account is not available in production")
         if not user.is_active or user.status in {UserStatus.SUSPENDED, UserStatus.DISABLED}:
             raise AuthServiceError(403, "ACCOUNT_UNAVAILABLE", "Account is not available for login")
 
@@ -294,6 +309,41 @@ class AuthService:
         if value is None:
             return None
         return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+
+    def _find_or_create_state(self, state_name: str):
+        from app.models.administrative_unit import AdministrativeUnit
+
+        name = state_name.strip()
+        state = self.database.scalar(
+            select(AdministrativeUnit).where(
+                AdministrativeUnit.unit_type == "state",
+                AdministrativeUnit.name == name,
+            )
+        )
+        if state is not None:
+            return state
+        state = AdministrativeUnit(name=name, unit_type="state")
+        self.database.add(state)
+        self.database.flush()
+        return state
+
+    def _find_or_create_district(self, *, state_name: str, state_id: int, district_name: str):
+        from app.models.administrative_unit import AdministrativeUnit
+
+        name = district_name.strip()
+        district = self.database.scalar(
+            select(AdministrativeUnit).where(
+                AdministrativeUnit.unit_type == "district",
+                AdministrativeUnit.parent_id == state_id,
+                AdministrativeUnit.name == name,
+            )
+        )
+        if district is not None:
+            return district
+        district = AdministrativeUnit(name=name, unit_type="district", parent_id=state_id)
+        self.database.add(district)
+        self.database.flush()
+        return district
 
     def _audit(
         self,

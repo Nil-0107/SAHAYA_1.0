@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { postAuthenticationPath } from "../config/demoAuth";
+import { postAuthenticationPath } from "../config/authRouting";
 import { useAuth } from "../context/AuthContext";
 
 export function OnboardingRoute({ step }: { step: "profile" | "dashboard" }) {

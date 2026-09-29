@@ -13,24 +13,27 @@ from app.models.user import User
 
 
 class DistrictDashboardService:
-    def __init__(self, database: Session) -> None:
+    def __init__(self, database: Session, *, include_demo: bool = True) -> None:
         self.database = database
+        self.include_demo = include_demo
 
     def dashboard(self, *, user: User) -> dict[str, list | int]:
         scope_conditions = []
         if user.district_id is not None:
             scope_conditions.append(User.district_id == user.district_id)
+        case_query = select(Case.id).join(CaseAssignment, CaseAssignment.case_id == Case.id).join(User, User.id == Case.owner_user_id).where(
+            CaseAssignment.assignee_user_id == user.id,
+            CaseAssignment.assignment_type == AssignmentType.DISTRICT_COORDINATION,
+            CaseAssignment.active.is_(True),
+            *scope_conditions,
+        )
+        if not self.include_demo:
+            case_query = case_query.where(
+                Case.is_demo.is_(False), CaseAssignment.is_demo.is_(False)
+            )
         case_ids = list(
             self.database.scalars(
-                select(Case.id)
-                .join(CaseAssignment, CaseAssignment.case_id == Case.id)
-                .join(User, User.id == Case.owner_user_id)
-                .where(
-                    CaseAssignment.assignee_user_id == user.id,
-                    CaseAssignment.assignment_type == AssignmentType.DISTRICT_COORDINATION,
-                    CaseAssignment.active.is_(True),
-                    *scope_conditions,
-                )
+                case_query
                 .distinct()
             )
         )
@@ -50,38 +53,28 @@ class DistrictDashboardService:
                 },
             }
 
-        cases = list(
-            self.database.scalars(
-                select(Case)
-                .where(Case.id.in_(case_ids))
-                .order_by(Case.created_at.desc(), Case.id.desc())
-            )
-        )
-        assistance_requests = list(
-            self.database.scalars(
-                select(SupportRequest)
-                .where(SupportRequest.case_id.in_(case_ids))
-                .order_by(SupportRequest.created_at.desc(), SupportRequest.id.desc())
-            )
-        )
-        coordination = list(
-            self.database.scalars(
-                select(CaseAssignment)
-                .where(
+        case_data_query = select(Case).where(Case.id.in_(case_ids))
+        request_query = select(SupportRequest).where(SupportRequest.case_id.in_(case_ids))
+        coordination_query = select(CaseAssignment).where(
                     CaseAssignment.case_id.in_(case_ids),
                     CaseAssignment.assignee_user_id == user.id,
                     CaseAssignment.assignment_type == AssignmentType.DISTRICT_COORDINATION,
                     CaseAssignment.active.is_(True),
                 )
-                .order_by(CaseAssignment.assigned_at.desc(), CaseAssignment.id.desc())
-            )
-        )
+        if not self.include_demo:
+            case_data_query = case_data_query.where(Case.is_demo.is_(False))
+            request_query = request_query.where(SupportRequest.is_demo.is_(False))
+            coordination_query = coordination_query.where(CaseAssignment.is_demo.is_(False))
+        cases = list(self.database.scalars(case_data_query.order_by(Case.created_at.desc(), Case.id.desc())))
+        assistance_requests = list(self.database.scalars(request_query.order_by(SupportRequest.created_at.desc(), SupportRequest.id.desc())))
+        coordination = list(self.database.scalars(coordination_query.order_by(CaseAssignment.assigned_at.desc(), CaseAssignment.id.desc())))
         notifications = list(
             self.database.scalars(
                 select(Notification)
                 .where(
                     Notification.user_id == user.id,
                     Notification.case_id.in_(case_ids),
+                    *(() if self.include_demo else (Notification.is_demo.is_(False),)),
                 )
                 .order_by(Notification.created_at.desc(), Notification.id.desc())
             )

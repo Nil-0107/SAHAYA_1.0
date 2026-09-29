@@ -53,6 +53,6 @@ The Twilio adapter also has a contract test using a fake Twilio client, so produ
 ## Remaining operational requirements
 
 - Real SMS delivery has not been exercised in this workspace because no actual credentials were supplied and automated tests must not send SMS.
-- Production deployment must use HTTPS, a secrets manager or protected backend environment, Twilio sender/Messaging Service configuration, and a stable high-entropy `SAATHI_OTP_SECRET_ENCRYPTION_KEY`.
+- Production deployment must use HTTPS, a secrets manager or protected backend environment, Twilio sender/Messaging Service configuration, and a stable high-entropy `SAHAYA_OTP_SECRET_ENCRYPTION_KEY`.
 - Rate limits are database-backed per account. A multi-instance production deployment may additionally require a shared edge rate limiter without changing the API contract.
 - Operational alerting should cover Twilio failures and repeated OTP abuse without recording OTP values or secrets.

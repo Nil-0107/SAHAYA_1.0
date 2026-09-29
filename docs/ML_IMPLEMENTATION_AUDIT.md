@@ -1,4 +1,4 @@
-# SAATHI ML Implementation Audit
+# SAHAYA ML Implementation Audit
 
 ## Artifacts
 
@@ -57,7 +57,7 @@ The API returns the same actual values. The frontend displays numeric class and 
 
 ## Safety boundary
 
-The ML artifact is an emotion classification model. SAATHI does not claim that its numeric classes represent clinical distress, abuse, danger, legal category, or future probability. The separate administrative priority engine uses only approved structured case/support facts and never consumes ML output.
+The ML artifact is an emotion classification model. SAHAYA does not claim that its numeric classes represent clinical distress, abuse, danger, legal category, or future probability. The separate administrative priority engine uses only approved structured case/support facts and never consumes ML output.
 
 ## Tests
 

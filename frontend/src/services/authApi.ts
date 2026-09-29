@@ -7,6 +7,8 @@ export interface SignupPayload {
   password: string;
   date_of_birth: string;
   role?: UserRole;
+  state_name?: string;
+  district_name?: string;
 }
 
 export interface LoginPayload {

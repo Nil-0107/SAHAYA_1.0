@@ -1,8 +1,8 @@
-"""Controlled, idempotent seed for synthetic SAATHI demo personas.
+"""Controlled, idempotent seed for synthetic SAHAYA demo personas.
 
 Run from the ``backend`` directory with::
 
-    SAATHI_ENV=development python -m app.demo.seed_demo
+    SAHAYA_ENV=development python -m app.demo.seed_demo
 
 There is intentionally no HTTP route for this operation. The command refuses
 production, staging, and production-looking database identifiers. Every row it
@@ -212,10 +212,10 @@ def seed_demo(database: Session | None = None) -> SeedResult:
     Repeated runs reconcile the same stable demo keys. No real/non-demo row is
     ever selected for update, and a natural-key collision raises before write.
     """
-    raw_environment = os.getenv("SAATHI_ENV", "").strip().lower()
+    raw_environment = os.getenv("SAHAYA_ENV", "").strip().lower()
     if raw_environment not in ALLOWED_DEMO_ENVIRONMENTS:
         raise DemoSeedEnvironmentError(
-            "Demo seeding is blocked unless SAATHI_ENV is development, local, or test."
+            "Demo seeding is blocked unless SAHAYA_ENV is development, local, or test."
         )
     settings: Settings = get_settings()
     settings.require_demo_seed_allowed()
@@ -1019,7 +1019,7 @@ def main() -> None:
     except Exception as exc:
         raise SystemExit(f"Demo seed refused: {exc}") from exc
 
-    print("SAATHI synthetic demo personas are ready.")
+    print("SAHAYA synthetic demo personas are ready.")
     print(f"Created: {result.created}; updated: {result.updated}; unchanged: {result.unchanged}")
     print(f"Demo users: {result.demo_users}")
     print("Unique development credentials are documented in docs/DEMO_ACCOUNTS.md.")

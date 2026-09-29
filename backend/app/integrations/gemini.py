@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import time
 from collections.abc import Callable, Sequence
 from typing import Any
 
@@ -16,6 +17,8 @@ class GeminiUnavailableError(RuntimeError):
 
 
 class GeminiAdapter:
+    _RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
+
     def __init__(self, settings: Settings, client_factory: Callable[..., Any] | None = None) -> None:
         self.settings = settings
         self.client_factory = client_factory
@@ -34,6 +37,46 @@ class GeminiAdapter:
                 raise GeminiUnavailableError(
                     "Gemini request failed. Check GEMINI_API_KEY, GEMINI_MODEL, network access, and the Google API key's Generative Language API permissions."
                 ) from rest_error
+
+    def health(self) -> dict[str, object]:
+        """Check configuration, model reachability, and generation capability."""
+        if not self.settings.gemini_api_key:
+            return {"configured": False, "reachable": False, "generation_working": False, "status": "unconfigured"}
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.settings.gemini_model}"
+        try:
+            response = httpx.get(
+                url,
+                headers={"x-goog-api-key": self.settings.gemini_api_key},
+                timeout=10.0,
+            )
+            if response.status_code != 200:
+                return {"configured": True, "reachable": False, "generation_working": False, "status": "unavailable"}
+            model = response.json()
+            methods = model.get("supportedGenerationMethods", []) if isinstance(model, dict) else []
+            if "generateContent" not in methods:
+                return {"configured": True, "reachable": False, "generation_working": False, "status": "unavailable"}
+        except (httpx.HTTPError, ValueError, TypeError):
+            return {"configured": True, "reachable": False, "generation_working": False, "status": "unavailable"}
+
+        generation_working = self._generation_probe()
+        return {
+            "configured": True,
+            "reachable": True,
+            "generation_working": generation_working,
+            "status": "working" if generation_working else "reachable",
+        }
+
+    def _generation_probe(self) -> bool:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.settings.gemini_model}:generateContent"
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": "Reply with OK."}]}],
+            "generationConfig": {"temperature": 0.0, "maxOutputTokens": 1},
+        }
+        try:
+            data = self._post_json(url, payload, timeout=20.0)
+            return bool(data.get("candidates"))
+        except (httpx.HTTPError, ValueError, TypeError):
+            return False
 
     def transcribe_audio(self, *, system_instruction: str, audio: bytes, mime_type: str) -> str:
         if not self.settings.gemini_api_key:
@@ -63,9 +106,7 @@ class GeminiAdapter:
             ]}],
             "generationConfig": {"temperature": 0.0},
         }
-        response = httpx.post(url, params={"key": self.settings.gemini_api_key}, json=payload, timeout=60.0)
-        response.raise_for_status()
-        data = response.json()
+        data = self._post_json(url, payload, timeout=60.0)
         text = self._extract_rest_text(data)
         if not text:
             raise GeminiUnavailableError("Gemini returned no transcription")
@@ -109,12 +150,30 @@ class GeminiAdapter:
             "contents": contents,
             "generationConfig": {"temperature": 0.2},
         }
-        response = httpx.post(url, params={"key": self.settings.gemini_api_key}, json=payload, timeout=45.0)
-        response.raise_for_status()
-        text = self._extract_rest_text(response.json())
+        data = self._post_json(url, payload, timeout=45.0)
+        text = self._extract_rest_text(data)
         if not text:
             raise GeminiUnavailableError("Gemini returned no text")
         return text
+
+    def _post_json(self, url: str, payload: dict[str, Any], *, timeout: float) -> dict[str, Any]:
+        """Make a real provider request, retrying transient overload only."""
+        for attempt in range(2):
+            response = httpx.post(
+                url,
+                headers={"x-goog-api-key": self.settings.gemini_api_key},
+                json=payload,
+                timeout=timeout,
+            )
+            if response.status_code in self._RETRYABLE_STATUS_CODES and attempt == 0:
+                time.sleep(0.5)
+                continue
+            response.raise_for_status()
+            data = response.json()
+            if not isinstance(data, dict):
+                raise ValueError("Gemini returned an invalid response")
+            return data
+        raise RuntimeError("Gemini request did not complete")
 
     @staticmethod
     def _extract_rest_text(data: dict[str, Any]) -> str:

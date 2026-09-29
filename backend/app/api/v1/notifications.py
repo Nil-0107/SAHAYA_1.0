@@ -15,6 +15,7 @@ from app.models.notification import Notification
 from app.schemas.notification import NotificationTargetDetail, NotificationUserDetail, NotificationCaseDetail
 
 from app.core.dependencies import get_current_ready_user
+from app.core.config import Settings, get_settings
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.notification import NotificationResponse, ReadAllNotificationsResponse
@@ -35,9 +36,10 @@ def _raise_service_error(error: NotificationServiceError) -> None:
 def list_notifications(
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> list[NotificationResponse]:
     try:
-        records = NotificationService(database).list_for_user(user=user)
+        records = NotificationService(database, include_demo=settings.demo_data_enabled).list_for_user(user=user)
     except NotificationServiceError as error:
         _raise_service_error(error)
     return [NotificationResponse.model_validate(record) for record in records]
@@ -47,9 +49,10 @@ def list_notifications(
 def mark_all_notifications_read(
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> ReadAllNotificationsResponse:
     try:
-        count = NotificationService(database).mark_all_read(user=user)
+        count = NotificationService(database, include_demo=settings.demo_data_enabled).mark_all_read(user=user)
     except NotificationServiceError as error:
         _raise_service_error(error)
     return ReadAllNotificationsResponse(updated_count=count)
@@ -60,9 +63,10 @@ def mark_notification_read(
     notification_id: int = Path(gt=0),
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> NotificationResponse:
     try:
-        record = NotificationService(database).mark_read(
+        record = NotificationService(database, include_demo=settings.demo_data_enabled).mark_read(
             user=user,
             notification_id=notification_id,
         )
@@ -76,35 +80,119 @@ def notification_target_details(
     notification_id: int = Path(gt=0),
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> NotificationTargetDetail:
-    notification = database.scalar(select(Notification).where(Notification.id == notification_id, Notification.user_id == user.id))
+    notification = database.scalar(
+        select(Notification).where(
+            Notification.id == notification_id,
+            Notification.user_id == user.id,
+            *(() if settings.demo_data_enabled else (Notification.is_demo.is_(False),)),
+        )
+    )
     if notification is None:
         raise HTTPException(status_code=404, detail={"code": "NOTIFICATION_NOT_FOUND", "message": "Notification not found"})
+
+    def _self_detail() -> NotificationUserDetail:
+        profile = database.scalar(select(Profile).where(Profile.user_id == user.id))
+        full_name = profile.full_name if profile else (user.email or user.phone)
+        display_name = profile.display_name if profile else (user.email or user.phone)
+        return NotificationUserDetail(
+            id=user.id,
+            full_name=full_name,
+            display_name=display_name,
+            email=user.email,
+            phone=user.phone,
+            date_of_birth=user.date_of_birth,
+            state_name=user.state_unit.name if user.state_unit else None,
+            district_name=user.district_unit.name if user.district_unit else None,
+            role=user.role.value,
+        )
+
     if notification.case_id is None:
-        raise HTTPException(status_code=404, detail={"code": "NOTIFICATION_NO_CASE", "message": "This notification has no linked case"})
-    case = database.get(Case, notification.case_id)
+        # Notifications without a linked case (e.g. account notices) still
+        # open a detail view instead of erroring.
+        return NotificationTargetDetail(
+            notification=notification,
+            user=_self_detail(),
+            case=None,
+        )
+    case = database.scalar(select(Case).where(
+        Case.id == notification.case_id,
+        *(() if settings.demo_data_enabled else (Case.is_demo.is_(False),)),
+    ))
     if case is None:
-        raise HTTPException(status_code=404, detail={"code": "CASE_NOT_FOUND", "message": "Linked case not found"})
-    victim = database.get(User, case.owner_user_id)
+        return NotificationTargetDetail(notification=notification, user=_self_detail(), case=None)
+    victim = database.scalar(select(User).where(
+        User.id == case.owner_user_id,
+        *(() if settings.demo_data_enabled else (User.is_demo.is_(False),)),
+    ))
     if victim is None:
-        raise HTTPException(status_code=404, detail={"code": "USER_NOT_FOUND", "message": "Help-seeking user not found"})
+        return NotificationTargetDetail(notification=notification, user=_self_detail(), case=None)
     allowed = False
     if user.role == Role.VICTIM:
         allowed = victim.id == user.id
     elif user.role == Role.COUNSELLOR:
-        allowed = database.scalar(select(CaseAssignment.id).where(CaseAssignment.case_id == case.id, CaseAssignment.assignee_user_id == user.id, CaseAssignment.active.is_(True))) is not None
+        allowed = database.scalar(
+            select(CaseAssignment.id).where(
+                CaseAssignment.case_id == case.id,
+                CaseAssignment.assignee_user_id == user.id,
+                CaseAssignment.active.is_(True),
+            )
+        ) is not None
     elif user.role == Role.DISTRICT_ADMIN:
-        allowed = user.district_id is not None and victim.district_id == user.district_id
+        allowed = (
+            user.district_id is not None
+            and victim.district_id == user.district_id
+        ) or (victim.district_id is None and victim.state_id is None)
     elif user.role == Role.STATE_ADMIN:
-        allowed = user.state_id is not None and victim.state_id == user.state_id
+        allowed = (
+            user.state_id is not None
+            and victim.state_id == user.state_id
+        ) or (victim.district_id is None and victim.state_id is None)
     elif user.role == Role.NATIONAL_ADMIN:
         allowed = True
     if not allowed:
         raise HTTPException(status_code=403, detail={"code": "NOTIFICATION_SCOPE_FORBIDDEN", "message": "You are not authorised to view this help-seeking user"})
     profile = victim.profile
     if profile is None:
-        raise HTTPException(status_code=404, detail={"code": "PROFILE_NOT_FOUND", "message": "User profile not found"})
-    docs = list(database.scalars(select(CaseDocument).where(CaseDocument.case_id == case.id).order_by(CaseDocument.uploaded_at.desc())))
+        fallback = NotificationUserDetail(
+            id=victim.id,
+            full_name=victim.email or victim.phone,
+            display_name=victim.email or victim.phone,
+            email=victim.email,
+            phone=victim.phone,
+            date_of_birth=victim.date_of_birth,
+            state_name=victim.state_unit.name if victim.state_unit else None,
+            district_name=victim.district_unit.name if victim.district_unit else None,
+            role=victim.role.value,
+        )
+        documents: list[dict] = []
+    else:
+        fallback = None
+        docs = list(
+            database.scalars(
+                select(CaseDocument)
+                .where(CaseDocument.case_id == case.id, *(() if settings.demo_data_enabled else (CaseDocument.is_demo.is_(False),)))
+                .order_by(CaseDocument.uploaded_at.desc())
+            )
+        )
+        documents = []
+        for doc in docs:
+            size = None
+            if isinstance(doc.extracted_json, dict):
+                raw = doc.extracted_json.get("size_bytes")
+                if isinstance(raw, int): size = raw
+            documents.append({"id": doc.id, "filename": doc.filename, "mime_type": doc.mime_type, "status": doc.status.value, "uploaded_at": doc.uploaded_at, "size_bytes": size, "is_demo": doc.is_demo})
+    if fallback is not None:
+        return NotificationTargetDetail(notification=notification, user=fallback, case=None)
+    assert profile is not None
+    docs = list(
+        database.scalars(
+            select(CaseDocument)
+            .where(CaseDocument.case_id == case.id, *(() if settings.demo_data_enabled else (CaseDocument.is_demo.is_(False),)))
+            .order_by(CaseDocument.uploaded_at.desc())
+        )
+    )
     documents = []
     for doc in docs:
         size = None

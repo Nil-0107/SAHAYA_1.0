@@ -1,4 +1,4 @@
-"""SAATHI FastAPI application entry point."""
+"""SAHAYA FastAPI application entry point."""
 
 from __future__ import annotations
 
@@ -68,7 +68,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # =========================================================
 
     application = FastAPI(
-        title="SAATHI API",
+        title="SAHAYA API",
         version="0.1.0",
         lifespan=lifespan,
     )

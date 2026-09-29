@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import require_roles
+from app.core.config import Settings, get_settings
 from app.db.database import get_db
 from app.models.user import Role, User
 from app.schemas.administration import (
@@ -37,9 +38,10 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 def admin_dashboard(
     user: User = Depends(require_roles(Role.NATIONAL_ADMIN, Role.STATE_ADMIN, Role.DISTRICT_ADMIN)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
     include_demo: bool = Query(False),
 ) -> AdminDashboardResponse:
-    data = AdminDashboardService(database).dashboard(user=user, include_demo=include_demo)
+    data = AdminDashboardService(database, allow_demo=settings.demo_data_enabled).dashboard(user=user, include_demo=include_demo)
     support_counts = data["support_request_counts"]
     return AdminDashboardResponse(
         aggregate=AdminAggregate(**data["aggregate"]),
@@ -59,9 +61,10 @@ def admin_dashboard(
 def admin_audit_log(
     user: User = Depends(require_roles(Role.NATIONAL_ADMIN, Role.STATE_ADMIN, Role.DISTRICT_ADMIN)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
     include_demo: bool = Query(False),
 ) -> list[AdminAuditEntry]:
-    data = AdminDashboardService(database).dashboard(user=user, include_demo=include_demo)
+    data = AdminDashboardService(database, allow_demo=settings.demo_data_enabled).dashboard(user=user, include_demo=include_demo)
     return [AdminAuditEntry(**item) for item in data["audit_entries"]]
 
 
@@ -69,9 +72,10 @@ def admin_audit_log(
 def admin_priority_queue(
     user: User = Depends(require_roles(Role.NATIONAL_ADMIN, Role.STATE_ADMIN, Role.DISTRICT_ADMIN)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
     include_demo: bool = Query(False),
 ) -> list[AdminPriorityQueueItem]:
-    data = AdminDashboardService(database).dashboard(user=user, include_demo=include_demo)
+    data = AdminDashboardService(database, allow_demo=settings.demo_data_enabled).dashboard(user=user, include_demo=include_demo)
     return [AdminPriorityQueueItem(**item) for item in data["priority_queue"]]
 
 
@@ -102,9 +106,10 @@ def admin_recalculate_case_priority(
     case_id: int = Path(gt=0),
     user: User = Depends(require_roles(Role.NATIONAL_ADMIN, Role.STATE_ADMIN, Role.DISTRICT_ADMIN)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
     include_demo: bool = Query(False),
 ) -> AdminPriorityQueueItem:
-    data = AdminDashboardService(database).dashboard(user=user, include_demo=include_demo)
+    data = AdminDashboardService(database, allow_demo=settings.demo_data_enabled).dashboard(user=user, include_demo=include_demo)
     for item in data["priority_queue"]:
         if item["case_id"] == case_id:
             return AdminPriorityQueueItem(**item)
@@ -146,9 +151,10 @@ def _account_response(user: User) -> AdministrativeAccountResponse:
 def admin_users(
     user: User = Depends(require_roles(Role.NATIONAL_ADMIN, Role.STATE_ADMIN, Role.DISTRICT_ADMIN)),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
     include_demo: bool = Query(False),
 ) -> list[AdminUserDetail]:
-    return [AdminUserDetail(**item) for item in AdminDashboardService(database).user_directory(user=user, include_demo=include_demo)]
+    return [AdminUserDetail(**item) for item in AdminDashboardService(database, allow_demo=settings.demo_data_enabled).user_directory(user=user, include_demo=include_demo)]
 
 
 @router.post("/state-administrators", response_model=AdministrativeAccountResponse, status_code=201)

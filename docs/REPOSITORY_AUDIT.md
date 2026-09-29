@@ -1,8 +1,8 @@
-# SAATHI Repository Audit
+# SAHAYA Repository Audit
 
 **Audit date:** 2026-09-25  
 **Scope:** Current repository only; no product features were implemented.  
-**Result:** The repository is a **buildable foundation/scaffold**, not a functional or production-ready SAATHI application.
+**Result:** The repository is a **buildable foundation/scaffold**, not a functional or production-ready SAHAYA application.
 
 ## Executive summary
 
@@ -39,8 +39,8 @@ The following read-only checks were performed:
 # Backend tests
 cd backend
 PYTHONDONTWRITEBYTECODE=1 \
-SAATHI_ENV=test \
-SAATHI_DATABASE_URL='sqlite:///:memory:' \
+SAHAYA_ENV=test \
+SAHAYA_DATABASE_URL='sqlite:///:memory:' \
 python3 -m pytest -q -p no:cacheprovider
 
 # Python dependency consistency
@@ -56,8 +56,8 @@ cd ../backend
 python3 -m pytest --collect-only -q -p no:cacheprovider
 
 # Demo idempotency
-SAATHI_ENV=test \
-SAATHI_DATABASE_URL='sqlite:///.../audit-demo.db' \
+SAHAYA_ENV=test \
+SAHAYA_DATABASE_URL='sqlite:///.../audit-demo.db' \
 python3 -m app.demo.seed_demo
 # Run again and confirm 0 created / 0 updated.
 
@@ -121,11 +121,11 @@ The resolved versions are not locked in the repository.
 
 The following source materials are present in the repository root:
 
-- `SAATHI_OPENCODE_MASTER_BUILD_SPEC.md` — 2,186 lines.
-- `saathi_dynamic_distress_ui_updated.html` — 829 lines.
-- `backend_saathi.pdf` — six-page “SAATHI Backend Specification.”
-- `prd_saathi(1).pdf` — four-page “SAATHI PRD.”
-- `ui_saathi.pdf` — four-page “SAATHI UI Specification.”
+- `SAHAYA_OPENCODE_MASTER_BUILD_SPEC.md` — 2,186 lines.
+- `sahaya_dynamic_distress_ui_updated.html` — 829 lines.
+- `backend_sahaya.pdf` — six-page “SAHAYA Backend Specification.”
+- `prd_sahaya(1).pdf` — four-page “SAHAYA PRD.”
+- `ui_sahaya.pdf` — four-page “SAHAYA UI Specification.”
 - `tfidf_vectorizer(1)(1).joblib`.
 - `logistic_regression_emotion_model(1).joblib`.
 
@@ -208,7 +208,7 @@ Implemented controls:
 - Non-routable `000000...` demo phone numbers.
 - Salted, non-plaintext demo password hashes.
 - `is_demo` and stable `demo_key` on model records.
-- Explicit `SAATHI_ENV` requirement for seed/reset.
+- Explicit `SAHAYA_ENV` requirement for seed/reset.
 - Refusal for production/staging environments.
 - Refusal for obvious production-looking database URLs.
 - Idempotent reconciliation through stable demo keys.
@@ -272,7 +272,7 @@ Present documentation:
 - `docs/SECURITY_AUDIT.md`
 - `docs/QA_REPORT.md`
 - `docs/FINAL_REQUIREMENTS_MATRIX.md`
-- `docs/RUNNING_SAATHI.md`
+- `docs/RUNNING_SAHAYA.md`
 - root and backend README files
 
 Present scripts:
@@ -280,7 +280,7 @@ Present scripts:
 - `scripts/seed-demo.sh`
 - `scripts/reset-demo.sh`
 
-These scripts require an explicit `SAATHI_ENV` value and call the controlled module commands.
+These scripts require an explicit `SAHAYA_ENV` value and call the controlled module commands.
 
 ## 1.7 Active tests
 
@@ -389,7 +389,7 @@ The backend cannot support the frontend or product:
 - The backend reads `os.getenv()` but does not load `.env` files.
 - Documentation says `cp .env.example .env`, but copying the file alone does not affect backend configuration.
 - Backend settings omit JWT, legacy OTP provider, Gemini, CORS, upload path, token lifetime, and rate-limit configuration.
-- The PDF contract uses names such as `DATABASE_URL`; current code uses `SAATHI_DATABASE_URL`. This is manageable but must be documented consistently.
+- The PDF contract uses names such as `DATABASE_URL`; current code uses `SAHAYA_DATABASE_URL`. This is manageable but must be documented consistently.
 - No fail-fast production configuration validation exists.
 
 ## 3.5 Demo seed accounting
@@ -452,7 +452,7 @@ The backend cannot support the frontend or product:
 
 ## 4.1 Resolved structural conflict
 
-`backend_saathi.pdf` describes an older `app/db/models.py` and `api/routes/` organization. The current split model files and `api/v1/` structure follow the later explicit mandatory project structure supplied by the user. The current structure should be retained; older PDF path examples should not drive a reversal.
+`backend_sahaya.pdf` describes an older `app/db/models.py` and `api/routes/` organization. The current split model files and `api/v1/` structure follow the later explicit mandatory project structure supplied by the user. The current structure should be retained; older PDF path examples should not drive a reversal.
 
 ## 4.2 Role-selection order
 
@@ -488,7 +488,7 @@ The current code does not fabricate ML labels or risk scores, which is correct. 
 
 The HTML contains intentionally fake behavior that must not be treated as a product contract:
 
-- Any non-empty login ID/password opens a role dashboard (`saathi_dynamic_distress_ui_updated.html:729-744`).
+- Any non-empty login ID/password opens a role dashboard (`sahaya_dynamic_distress_ui_updated.html:729-744`).
 - OTP is generated in browser memory and displayed (`677-690`).
 - Signup identity data is stored in `localStorage` (`712-715`).
 - File selection is treated as successful case ingestion (`536-559`).
@@ -502,11 +502,11 @@ The React implementation should reproduce the visual design and truthful states,
 
 ## 4.9 PDF/backend path and environment naming differences
 
-The extracted backend PDF uses `DATABASE_URL`, while current code uses `SAATHI_DATABASE_URL`; the PDF also shows older model/route paths. The current mandatory structure and environment namespace can remain, but all authoritative docs must be synchronized.
+The extracted backend PDF uses `DATABASE_URL`, while current code uses `SAHAYA_DATABASE_URL`; the PDF also shows older model/route paths. The current mandatory structure and environment namespace can remain, but all authoritative docs must be synchronized.
 
 ## 4.10 Missing source named by the master
 
-The master names `trd_saathi(1).pdf`, but that exact file is absent. The supplied PDFs are generated Backend Specification, PRD, and UI Specification documents. The master also names ML files with different suffixes than the actual root files. The copied artifacts match the actual supplied files byte-for-byte, but this provenance discrepancy should be documented.
+The master names `trd_sahaya(1).pdf`, but that exact file is absent. The supplied PDFs are generated Backend Specification, PRD, and UI Specification documents. The master also names ML files with different suffixes than the actual root files. The copied artifacts match the actual supplied files byte-for-byte, but this provenance discrepancy should be documented.
 
 ---
 
@@ -691,7 +691,7 @@ python3 -m pip install -r requirements.txt
 Run API:
 
 ```bash
-SAATHI_ENV=development \
+SAHAYA_ENV=development \
 python3 -m uvicorn app.main:app --reload
 ```
 
@@ -704,8 +704,8 @@ http://127.0.0.1:8000/health
 Tests:
 
 ```bash
-SAATHI_ENV=test \
-SAATHI_DATABASE_URL='sqlite:///:memory:' \
+SAHAYA_ENV=test \
+SAHAYA_DATABASE_URL='sqlite:///:memory:' \
 python3 -m pytest -q
 ```
 
@@ -714,15 +714,15 @@ python3 -m pytest -q
 From repository root:
 
 ```bash
-SAATHI_ENV=development ./scripts/seed-demo.sh
-SAATHI_ENV=development ./scripts/reset-demo.sh
+SAHAYA_ENV=development ./scripts/seed-demo.sh
+SAHAYA_ENV=development ./scripts/reset-demo.sh
 ```
 
 From backend:
 
 ```bash
-SAATHI_ENV=development python3 -m app.demo.seed_demo
-SAATHI_ENV=development python3 -m app.demo.reset_demo
+SAHAYA_ENV=development python3 -m app.demo.seed_demo
+SAHAYA_ENV=development python3 -m app.demo.reset_demo
 ```
 
 There is intentionally no seed/reset HTTP endpoint.
@@ -769,7 +769,7 @@ No backend business endpoint currently exists under that prefix, and backend COR
 ## 8.2 Demo isolation risks
 
 - At audit time, the demo implementation used one shared password. The implemented persona system now uses a unique password per fictional account and authenticates every persona through the normal login route.
-- Safety depends on correct `SAATHI_ENV` and database URL configuration. A production process misconfigured as `local`/`test` could pass the guard.
+- Safety depends on correct `SAHAYA_ENV` and database URL configuration. A production process misconfigured as `local`/`test` could pass the guard.
 - The production URL check is heuristic and cannot prove that a database is non-production.
 - `seed_demo(database=...)` and `reset_demo(database=...)` validate the configured environment/URL but do not verify that a caller-supplied session uses that database. A caller can pass a production-bound session while configuring a safe-looking URL.
 - Demo and non-demo local-development rows share one schema. Markers and conflict guards reduce risk but do not provide physical database isolation.

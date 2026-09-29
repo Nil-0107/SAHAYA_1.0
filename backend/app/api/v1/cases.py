@@ -45,7 +45,9 @@ def _document_response(document: CaseDocument) -> CaseDocumentResponse:
     )
 
 
-def _timeline(case: Case, database: Session) -> list[CaseTimelineEvent]:
+def _timeline(case: Case, database: Session, *, include_demo: bool) -> list[CaseTimelineEvent]:
+    if not include_demo:
+        return []
     rows = database.scalars(
         select(AuditLog)
         .where(
@@ -71,18 +73,21 @@ def _timeline(case: Case, database: Session) -> list[CaseTimelineEvent]:
     return events
 
 
-def _case_response(case: Case, database: Session) -> CaseResponse:
+def _case_response(case: Case, database: Session, *, include_demo: bool) -> CaseResponse:
+    document_query = select(CaseDocument).where(CaseDocument.case_id == case.id)
+    support_query = select(SupportRequest).where(SupportRequest.case_id == case.id)
+    if not include_demo:
+        document_query = document_query.where(CaseDocument.is_demo.is_(False))
+        support_query = support_query.where(SupportRequest.is_demo.is_(False))
     documents = list(
         database.scalars(
-            select(CaseDocument)
-            .where(CaseDocument.case_id == case.id)
+            document_query
             .order_by(CaseDocument.uploaded_at.desc(), CaseDocument.id.desc())
         )
     )
     support_requests = list(
         database.scalars(
-            select(SupportRequest)
-            .where(SupportRequest.case_id == case.id)
+            support_query
             .order_by(SupportRequest.created_at.desc(), SupportRequest.id.desc())
         )
     )
@@ -111,7 +116,7 @@ def _case_response(case: Case, database: Session) -> CaseResponse:
             for request in support_requests
         ],
         updates=[],
-        timeline=_timeline(case, database),
+        timeline=_timeline(case, database, include_demo=include_demo),
     )
 
 
@@ -132,7 +137,7 @@ def create_case(
         )
     except CaseServiceError as error:
         _raise_service_error(error)
-    return _case_response(case, database)
+    return _case_response(case, database, include_demo=settings.demo_data_enabled)
 
 
 @router.post("/upload", response_model=CaseDocumentResponse, status_code=status.HTTP_201_CREATED)
@@ -164,7 +169,7 @@ def list_my_cases(
         cases = CaseService(database, settings).list_for_user(user=user)
     except CaseServiceError as error:
         _raise_service_error(error)
-    return [_case_response(case, database) for case in cases]
+    return [_case_response(case, database, include_demo=settings.demo_data_enabled) for case in cases]
 
 
 @router.get("/{case_id}", response_model=CaseResponse)
@@ -178,4 +183,4 @@ def get_case(
         case = CaseService(database, settings).get_for_user(user=user, case_id=case_id)
     except CaseServiceError as error:
         _raise_service_error(error)
-    return _case_response(case, database)
+    return _case_response(case, database, include_demo=settings.demo_data_enabled)

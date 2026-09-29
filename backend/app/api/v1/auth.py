@@ -23,7 +23,7 @@ from app.services.auth_service import AuthService, AuthServiceError
 
 
 router = APIRouter(tags=["auth"])
-_REFRESH_COOKIE = "saathi_refresh"
+_REFRESH_COOKIE = "sahaya_refresh"
 _REFRESH_COOKIE_PATH = "/api/v1/auth"
 
 
@@ -81,6 +81,8 @@ def signup(
             password=payload.password,
             date_of_birth=payload.date_of_birth,
             role=payload.role,
+            state_name=payload.state_name,
+            district_name=payload.district_name,
         )
         session = service.create_session_for_user(user)
     except AuthServiceError as error:

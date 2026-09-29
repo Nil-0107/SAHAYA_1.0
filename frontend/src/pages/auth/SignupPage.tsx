@@ -1,26 +1,47 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Check, Eye, EyeOff, ShieldCheck } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../../components/common/Button";
 import { Card } from "../../components/common/Card";
 import { InlineAlert } from "../../components/feedback/FeedbackStates";
-import { FormField, TextInput } from "../../components/forms/FormField";
+import { FormField, SelectInput, TextInput } from "../../components/forms/FormField";
 import { useAuth } from "../../context/AuthContext";
 import { authApi, type AuthSession } from "../../services/authApi";
 import { authErrorMessage } from "../../utils/authErrors";
+import type { UserRole } from "../../types";
+
+const roleOptions: Array<{ value: UserRole; label: string }> = [
+  { value: "victim", label: "Victim / User" },
+  { value: "counsellor", label: "Counsellor" },
+  { value: "district_admin", label: "District Administrator" },
+  { value: "state_admin", label: "State Administrator" },
+  { value: "national_admin", label: "National Administrator" },
+];
+
+function initialRole(params: URLSearchParams): UserRole {
+  const raw = params.get("role");
+  return roleOptions.some((item) => item.value === raw) ? (raw as UserRole) : "victim";
+}
 
 export function SignupPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { adoptSignup } = useAuth();
+  const [role, setRole] = useState<UserRole>(() => initialRole(searchParams));
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
+  const [stateName, setStateName] = useState("");
+  const [districtName, setDistrictName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const needsState = role === "counsellor" || role === "district_admin" || role === "state_admin";
+  const needsDistrict = role === "counsellor" || role === "district_admin";
 
   const passwordChecks = useMemo(
     () => [
@@ -53,9 +74,25 @@ export function SignupPage() {
       setError("Passwords do not match.");
       return;
     }
+    if (needsState && !stateName.trim()) {
+      setError("Enter your state name for this account type.");
+      return;
+    }
+    if (needsDistrict && !districtName.trim()) {
+      setError("Enter your district name for this account type.");
+      return;
+    }
     setSubmitting(true);
     try {
-      const result = await authApi.signup({ phone: `+91${phone}`, email: email || null, password, date_of_birth: dateOfBirth, role: "victim" });
+      const result = await authApi.signup({
+        phone: `+91${phone}`,
+        email: email || null,
+        password,
+        date_of_birth: dateOfBirth,
+        role,
+        state_name: needsState ? stateName.trim() : undefined,
+        district_name: needsDistrict ? districtName.trim() : undefined,
+      });
       const session: AuthSession = {
         access_token: result.access_token,
         token_type: result.token_type,
@@ -75,17 +112,34 @@ export function SignupPage() {
     <section className="mx-auto max-w-2xl">
       <AuthProgress current={1} />
       <Card className="mt-5 p-6 sm:p-8">
-        <p className="text-[11px] font-extrabold uppercase tracking-[.16em] text-saathi-700">Account details</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-[.16em] text-sahaya-700">Account details</p>
         <h1 className="mt-2 text-3xl font-extrabold text-slate-900">Create your account</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">You are creating a Victim / User account. Your account mobile is used as your account contact number. It is not your emergency contact.</p>
+        <p className="mt-2 text-sm leading-6 text-slate-500">Choose what kind of account you need. Your account mobile is used as your account contact number. It is not your emergency contact.</p>
 
         <form className="mt-6 grid gap-4" onSubmit={submitSignup}>
+          <FormField label="Account type">
+            <SelectInput required value={role} onChange={(event) => setRole(event.target.value as UserRole)}>
+              {roleOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </SelectInput>
+          </FormField>
+          {needsState ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label="State name">
+                <TextInput required maxLength={160} value={stateName} onChange={(event) => setStateName(event.target.value)} placeholder="Enter state name" />
+              </FormField>
+              {needsDistrict ? (
+                <FormField label="District name">
+                  <TextInput required maxLength={160} value={districtName} onChange={(event) => setDistrictName(event.target.value)} placeholder="Enter district name" />
+                </FormField>
+              ) : null}
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Full name">
               <TextInput required autoComplete="name" maxLength={120} value={fullName} onChange={(event) => setFullName(event.target.value)} />
             </FormField>
             <FormField label="Account mobile" hint="10-digit Indian mobile number">
-              <div className="flex overflow-hidden rounded-[10px] border border-slate-300 bg-white focus-within:border-saathi-500 focus-within:ring-2 focus-within:ring-teal-100">
+              <div className="flex overflow-hidden rounded-[10px] border border-slate-300 bg-white focus-within:border-sahaya-500 focus-within:ring-2 focus-within:ring-teal-100">
                 <span className="grid min-w-14 place-items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-600">+91</span>
                 <TextInput required inputMode="numeric" maxLength={10} autoComplete="tel-national" value={phone} onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))} className="border-0 focus:ring-0" />
               </div>
@@ -100,7 +154,7 @@ export function SignupPage() {
           <FormField label="Password">
             <div className="relative">
               <TextInput required type={showPassword ? "text" : "password"} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="pr-12" />
-              <button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((current) => !current)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-saathi-700 focus:outline-none focus:ring-2 focus:ring-saathi-500">
+              <button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((current) => !current)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-sahaya-700 focus:outline-none focus:ring-2 focus:ring-sahaya-500">
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
@@ -115,7 +169,7 @@ export function SignupPage() {
           <Button type="submit" loading={submitting}>Create account & continue</Button>
           <p className="flex items-center justify-center gap-2 text-center text-[11px] leading-5 text-slate-500"><ShieldCheck size={14} /> Your password is never stored in browser storage.</p>
         </form>
-        <p className="mt-5 text-center text-xs text-slate-500">Already have an account? <Link to="/login" className="font-extrabold text-saathi-700">Log in</Link></p>
+        <p className="mt-5 text-center text-xs text-slate-500">Already have an account? <Link to="/login" className="font-extrabold text-sahaya-700">Log in</Link></p>
       </Card>
     </section>
   );
@@ -132,10 +186,10 @@ export function AuthProgress({ current }: { current: 1 | 2 }) {
         return (
           <li key={step} className="flex flex-1 items-center last:flex-none">
             <div className="flex flex-col items-center gap-1">
-              <span aria-current={active ? "step" : undefined} className={`grid h-8 w-8 place-items-center rounded-full text-xs font-extrabold ${complete ? "bg-emerald-600 text-white" : active ? "bg-saathi-900 text-white" : "border border-slate-300 bg-white text-slate-400"}`}>
+              <span aria-current={active ? "step" : undefined} className={`grid h-8 w-8 place-items-center rounded-full text-xs font-extrabold ${complete ? "bg-emerald-600 text-white" : active ? "bg-sahaya-900 text-white" : "border border-slate-300 bg-white text-slate-400"}`}>
                 {complete ? <Check size={14} /> : number}
               </span>
-              <span className={`text-[10px] font-extrabold ${active ? "text-saathi-900" : "text-slate-400"}`}>{step}</span>
+              <span className={`text-[10px] font-extrabold ${active ? "text-sahaya-900" : "text-slate-400"}`}>{step}</span>
             </div>
             {number < steps.length ? <span aria-hidden="true" className={`mx-2 mb-5 h-px flex-1 ${complete ? "bg-emerald-500" : "bg-slate-200"}`} /> : null}
           </li>

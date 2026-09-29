@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        saathi: {
+        sahaya: {
           50: "#e8f4f2",
           100: "#d4ebe8",
           200: "#a9d5cf",

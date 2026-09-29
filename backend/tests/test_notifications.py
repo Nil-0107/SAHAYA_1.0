@@ -18,6 +18,9 @@ from app.demo.personas import DEMO_PERSONAS
 from app.demo.seed_demo import seed_demo
 from app.main import app
 from app.models.notification import Notification
+from app.models.administrative_unit import AdministrativeUnit
+from app.models.case import Case
+from app.models.profile import Profile
 from app.models.user import Role, User, UserStatus
 
 
@@ -26,8 +29,8 @@ PASSWORD = "ValidPass!123"
 
 @pytest.fixture
 def database(monkeypatch: pytest.MonkeyPatch) -> Generator[Session, None, None]:
-    monkeypatch.setenv("SAATHI_ENV", "test")
-    monkeypatch.setenv("SAATHI_DATABASE_URL", "sqlite:///:memory:")
+    monkeypatch.setenv("SAHAYA_ENV", "test")
+    monkeypatch.setenv("SAHAYA_DATABASE_URL", "sqlite:///:memory:")
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -182,6 +185,139 @@ def test_authorised_staff_can_open_notification_target_details(client: TestClien
     linked = next(item for item in notes.json() if item["case_id"] is not None)
     detail = client.get(f"/api/v1/notifications/{linked['id']}/target-details", headers=_headers(token))
     assert detail.status_code == 200
+    assert detail.json()["notification"]["id"] == linked["id"]
+
+
+def test_notification_without_case_opens_detail_view(
+    client: TestClient,
+    database: Session,
+) -> None:
+    owner = _user(database, "1005")
+    notification = Notification(
+        user_id=owner.id,
+        type="general",
+        title="Account notice",
+        message="Synthetic account notice without a case.",
+        is_read=False,
+    )
+    database.add(notification)
+    database.commit()
+    database.refresh(notification)
+
+    detail = client.get(
+        f"/api/v1/notifications/{notification.id}/target-details",
+        headers=_headers(_token(client, owner)),
+    )
+    assert detail.status_code == 200
     body = detail.json()
-    assert body["user"]["full_name"]
-    assert body["case"]["case_number"]
+    assert body["notification"]["id"] == notification.id
+    assert body["case"] is None
+    assert body["user"]["id"] == owner.id
+
+
+def test_authorised_staff_can_open_real_notification_target_details(client: TestClient, database: Session) -> None:
+    state = AdministrativeUnit(name="Real State", unit_type="state")
+    district = AdministrativeUnit(name="Real District", unit_type="district", parent=state)
+    database.add_all([state, district])
+    database.commit()
+    admin = User(
+        phone="+9193111001",
+        email="real.admin@example.invalid",
+        password_hash=hash_password(PASSWORD),
+        role=Role.STATE_ADMIN,
+        state_id=state.id,
+        status=UserStatus.ACTIVE,
+        phone_verified_at=datetime.now(timezone.utc),
+        profile_completed=True,
+    )
+    victim = User(
+        phone="+9193111002",
+        email="real.victim@example.invalid",
+        password_hash=hash_password(PASSWORD),
+        role=Role.VICTIM,
+        state_id=state.id,
+        district_id=district.id,
+        status=UserStatus.ACTIVE,
+        phone_verified_at=datetime.now(timezone.utc),
+        profile_completed=True,
+    )
+    database.add_all([admin, victim])
+    database.commit()
+    database.refresh(admin)
+    database.refresh(victim)
+    database.add(
+        Profile(
+            user_id=victim.id,
+            full_name="Real Help-seeking User",
+            display_name="Real User",
+            preferred_language="English",
+            city_or_district="Real District",
+            consent_at=datetime.now(timezone.utc),
+        )
+    )
+    case = Case(
+        owner_user_id=victim.id,
+        case_number="SA-REAL-0001",
+        category="wellbeing",
+        stage="intake",
+        summary="Real scoped case",
+    )
+    database.add(case)
+    database.flush()
+    notification = Notification(
+        user_id=admin.id,
+        case_id=case.id,
+        type="support_workflow",
+        title="Real support request",
+        message="A real scoped support request is available.",
+    )
+    database.add(notification)
+    database.commit()
+
+    detail = client.get(
+        f"/api/v1/notifications/{notification.id}/target-details",
+        headers=_headers(_token(client, admin)),
+    )
+    assert detail.status_code == 200
+    body = detail.json()
+    assert body["user"]["full_name"] == "Real Help-seeking User"
+    assert body["case"]["case_number"] == "SA-REAL-0001"
+
+    other_state = AdministrativeUnit(name="Other State", unit_type="state")
+    database.add(other_state)
+    database.commit()
+    other_victim = User(
+        phone="+9193111003",
+        email="other.victim@example.invalid",
+        password_hash=hash_password(PASSWORD),
+        role=Role.VICTIM,
+        state_id=other_state.id,
+        status=UserStatus.ACTIVE,
+        phone_verified_at=datetime.now(timezone.utc),
+        profile_completed=True,
+    )
+    database.add(other_victim)
+    database.flush()
+    other_case = Case(
+        owner_user_id=other_victim.id,
+        case_number="SA-OTHER-0001",
+        category="wellbeing",
+        stage="intake",
+    )
+    database.add(other_case)
+    database.flush()
+    out_of_scope = Notification(
+        user_id=admin.id,
+        case_id=other_case.id,
+        type="support_workflow",
+        title="Out of scope support request",
+        message="This record is outside the administrator scope.",
+    )
+    database.add(out_of_scope)
+    database.commit()
+    forbidden = client.get(
+        f"/api/v1/notifications/{out_of_scope.id}/target-details",
+        headers=_headers(_token(client, admin)),
+    )
+    assert forbidden.status_code == 403
+    assert forbidden.json()["error"]["code"] == "NOTIFICATION_SCOPE_FORBIDDEN"

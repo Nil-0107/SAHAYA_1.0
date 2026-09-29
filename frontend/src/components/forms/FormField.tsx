@@ -11,7 +11,7 @@ import {
 import { cn } from "../../utils/cn";
 
 const controlClass =
-  "w-full rounded-[10px] border border-slate-300 bg-white px-3 py-[11px] text-sm font-normal text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-saathi-500 focus:ring-2 focus:ring-teal-100 disabled:bg-slate-100";
+  "w-full rounded-[10px] border border-slate-300 bg-white px-3 py-[11px] text-sm font-normal text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sahaya-500 focus:ring-2 focus:ring-teal-100 disabled:bg-slate-100";
 
 interface FieldControlProps {
   id?: string;

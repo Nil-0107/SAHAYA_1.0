@@ -1,4 +1,4 @@
-# Running SAATHI
+# Running SAHAYA
 
 ## Backend
 
@@ -6,7 +6,7 @@
 cd backend
 python3 -m pip install -r requirements.txt
 cp .env.example .env
-SAATHI_ENV=development python3 -m uvicorn app.main:app --reload
+SAHAYA_ENV=development python3 -m uvicorn app.main:app --reload
 ```
 
 The API listens at `http://127.0.0.1:8000`; health is available at `/health`.
@@ -34,7 +34,7 @@ TWILIO_API_KEY_SID=
 TWILIO_API_KEY_SECRET=
 TWILIO_MESSAGING_SERVICE_SID=
 TWILIO_FROM_NUMBER=
-SAATHI_OTP_SECRET_ENCRYPTION_KEY=
+SAHAYA_OTP_SECRET_ENCRYPTION_KEY=
 ```
 
 Use one of these Twilio authentication methods:
@@ -49,7 +49,7 @@ Configure one SMS destination:
 
 `TWILIO_VERIFY_SERVICE_SID` remains a placeholder for a possible future Twilio Verify mode; the current PyOTP TOTP implementation uses Twilio Programmable Messaging and does not consume it.
 
-`SAATHI_OTP_SECRET_ENCRYPTION_KEY` must be a stable, high-entropy backend-only value. It encrypts TOTP secrets before SQLite persistence. Changing it invalidates any active encrypted OTP transactions. Production startup requires this value.
+`SAHAYA_OTP_SECRET_ENCRYPTION_KEY` must be a stable, high-entropy backend-only value. It encrypts TOTP secrets before SQLite persistence. Changing it invalidates any active encrypted OTP transactions. Production startup requires this value.
 
 Do not add Twilio credentials to `frontend/.env` or any variable beginning with `VITE_`.
 
@@ -70,7 +70,7 @@ Demo accounts are seeded with both `phone_verified_at` and `profile_completed` s
 From repository root:
 
 ```bash
-SAATHI_ENV=development ./scripts/seed-demo.sh
+SAHAYA_ENV=development ./scripts/seed-demo.sh
 ```
 
 The operation is refused for production/staging and has no HTTP endpoint.
@@ -78,7 +78,7 @@ The operation is refused for production/staging and has no HTTP endpoint.
 To remove synthetic rows:
 
 ```bash
-SAATHI_ENV=development ./scripts/reset-demo.sh
+SAHAYA_ENV=development ./scripts/reset-demo.sh
 ```
 
 ## Frontend
@@ -97,18 +97,18 @@ Backend tests use a mock Twilio provider and never send real SMS:
 
 ```bash
 cd backend
-SAATHI_ENV=test \
-SAATHI_DATABASE_URL='sqlite:///:memory:' \
-SAATHI_OTP_SECRET_ENCRYPTION_KEY='test-encryption-key' \
+SAHAYA_ENV=test \
+SAHAYA_DATABASE_URL='sqlite:///:memory:' \
+SAHAYA_OTP_SECRET_ENCRYPTION_KEY='test-encryption-key' \
 python3 -m pytest -q
 ```
 
 Run OTP tests specifically:
 
 ```bash
-SAATHI_ENV=test \
-SAATHI_DATABASE_URL='sqlite:///:memory:' \
-SAATHI_OTP_SECRET_ENCRYPTION_KEY='test-encryption-key' \
+SAHAYA_ENV=test \
+SAHAYA_DATABASE_URL='sqlite:///:memory:' \
+SAHAYA_OTP_SECRET_ENCRYPTION_KEY='test-encryption-key' \
 python3 -m pytest -q tests/test_otp.py
 ```
 

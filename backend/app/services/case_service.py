@@ -37,15 +37,13 @@ class CaseService:
     def __init__(self, database: Session, settings: Settings) -> None:
         self.database = database
         self.settings = settings
+        self.include_demo = settings.demo_data_enabled
 
     def list_for_user(self, *, user: User) -> list[Case]:
-        return list(
-            self.database.scalars(
-                select(Case)
-                .where(Case.owner_user_id == user.id)
-                .order_by(Case.created_at.desc(), Case.id.desc())
-            )
-        )
+        query = select(Case).where(Case.owner_user_id == user.id)
+        if not self.include_demo:
+            query = query.where(Case.is_demo.is_(False))
+        return list(self.database.scalars(query.order_by(Case.created_at.desc(), Case.id.desc())))
 
     def create_for_user(self, *, user: User, category: str, summary: str | None) -> Case:
         normalized_category = category.strip().casefold()
@@ -80,9 +78,10 @@ class CaseService:
             raise CaseServiceError(503, "CASE_SAVE_FAILED", "The case could not be saved")
 
     def get_for_user(self, *, user: User, case_id: int) -> Case:
-        case = self.database.scalar(
-            select(Case).where(Case.id == case_id, Case.owner_user_id == user.id)
-        )
+        query = select(Case).where(Case.id == case_id, Case.owner_user_id == user.id)
+        if not self.include_demo:
+            query = query.where(Case.is_demo.is_(False))
+        case = self.database.scalar(query)
         if case is None:
             raise CaseServiceError(404, "CASE_NOT_FOUND", "Case not found")
         return case
@@ -165,7 +164,7 @@ class CaseService:
                 )
             )
             # Notify the user's authorised administrative scope and active counsellor assignments.
-            recipients = list(self.database.scalars(select(User).where(User.id != user.id)))
+            recipients = list(self.database.scalars(select(User).where(User.id != user.id, User.is_demo.is_(False))))
             for recipient in recipients:
                 in_scope = False
                 if recipient.role == Role.NATIONAL_ADMIN:

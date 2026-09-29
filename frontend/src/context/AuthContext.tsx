@@ -9,7 +9,7 @@ import {
 } from "react";
 import { isAxiosError } from "axios";
 import { authApi, type AuthSession } from "../services/authApi";
-import { setAccessToken, setAuthSessionListener } from "../services/api";
+import { clearAuthSession, setAccessToken, setAuthSessionListener } from "../services/api";
 import type { AuthUser } from "../types";
 
 interface LoginCredentials {
@@ -33,6 +33,16 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const SESSION_HINT_KEY = "sahaya_session_present";
+
+function hasSessionHint(): boolean {
+  return window.localStorage.getItem(SESSION_HINT_KEY) === "1";
+}
+
+function setSessionHint(present: boolean): void {
+  if (present) window.localStorage.setItem(SESSION_HINT_KEY, "1");
+  else window.localStorage.removeItem(SESSION_HINT_KEY);
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -43,13 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const applySession = useCallback((session: AuthSession) => {
     setAccessToken(session.access_token);
+    setSessionHint(true);
     setUser(session.user);
     setSessionExpired(false);
     setBootstrapError("");
   }, []);
 
   const clearAuthState = useCallback(() => {
-    setAccessToken(null);
+    clearAuthSession();
+    setSessionHint(false);
     setUser(null);
     setPendingFullName("");
     setBootstrapError("");
@@ -65,6 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     let active = true;
+    if (!hasSessionHint()) {
+      setIsLoading(false);
+      return () => {
+        active = false;
+        setAuthSessionListener(null);
+      };
+    }
     authApi
       .refresh()
       .then((session) => {

@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_ready_user
+from app.core.config import Settings, get_settings
 from app.db.database import get_db
 from app.models.checkin import Checkin
 from app.models.user import User
-from app.schemas.checkin import CheckinCreateRequest, CheckinResponse
+from app.schemas.checkin import CheckinCreateRequest, CheckinResponse, EmotionClassificationResponse
 from app.services.checkin_service import CheckinService, CheckinServiceError
 
 
@@ -34,6 +35,7 @@ def _response(record: Checkin, *, model_version: str | None = None) -> CheckinRe
         model_version=model_version or record.model_version,
         analysis_status=record.analysis_status,
         created_at=record.created_at,
+        emotion=EmotionClassificationResponse.model_validate(record.emotion_result) if record.emotion_result else None,
     )
 
 
@@ -42,9 +44,10 @@ def create_checkin(
     payload: CheckinCreateRequest,
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> CheckinResponse:
     try:
-        result = CheckinService(database).create(
+        result = CheckinService(database, include_demo=settings.demo_data_enabled).create(
             user=user,
             text=payload.text,
             case_id=payload.case_id,
@@ -58,9 +61,10 @@ def create_checkin(
 def list_my_checkins(
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> list[CheckinResponse]:
     try:
-        records = CheckinService(database).list_for_user(user=user)
+        records = CheckinService(database, include_demo=settings.demo_data_enabled).list_for_user(user=user)
     except CheckinServiceError as error:
         _raise_service_error(error)
     return [_response(record) for record in records]
@@ -71,9 +75,10 @@ def get_checkin(
     checkin_id: int = Path(gt=0),
     user: User = Depends(get_current_ready_user),
     database: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ) -> CheckinResponse:
     try:
-        record = CheckinService(database).get_for_user(user=user, checkin_id=checkin_id)
+        record = CheckinService(database, include_demo=settings.demo_data_enabled).get_for_user(user=user, checkin_id=checkin_id)
     except CheckinServiceError as error:
         _raise_service_error(error)
     return _response(record)
